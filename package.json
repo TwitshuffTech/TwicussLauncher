@@ -9,6 +9,7 @@
   "author": "nekochoc0",
   "license": "ISC",
   "devDependencies": {
+    "@azure/msal-node": "^1.15.0",
     "electron": "^23.0.0"
   }
 }

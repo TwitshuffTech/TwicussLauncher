@@ -1,0 +1,3 @@
+# TwicussLauncher
+
+互換性の関係上Electron環境で再開発することにしました

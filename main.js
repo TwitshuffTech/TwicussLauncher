@@ -25,6 +25,16 @@ app.whenReady().then(() => {
     mainWindow.loadFile(path.join(__dirname, "app/index.html"))
 })
 
+app.on("window-all-closed", () => {
+    app.quit();
+});
+
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
+});
+
 ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
     const account = await authProvider.login()
 

@@ -1,0 +1,14 @@
+{
+  "name": "twicusslauncher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "nekochoc0",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^23.0.0"
+  }
+}

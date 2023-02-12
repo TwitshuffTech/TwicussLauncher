@@ -1,12 +1,14 @@
 const { app, ipcMain, BrowserWindow } = require("electron")
 const path = require("path")
 
-const AuthProvider = require("./app/AuthProvider")
+const MicrosoftAuthProvider = require("./app/MicrosoftAuthProvider")
+const MinecraftAuthProvider = require("./app/MinecraftAuthProvider")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 
-let authProvider;
-let mainWindow;
+let microsoftAuthProvider
+let minecraftAuthProvider
+let mainWindow
 
 let createWindow = () => {
     mainWindow = new BrowserWindow({
@@ -17,7 +19,7 @@ let createWindow = () => {
         },
     })
 
-    authProvider = new AuthProvider(msalConfig)
+    microsoftAuthProvider = new MicrosoftAuthProvider(msalConfig)
     checkCache()
 }
 
@@ -36,10 +38,13 @@ app.on('activate', () => {
 });
 
 let checkCache = async () => {
-    const response = await authProvider.getTokenFromCache()
+    const response = await microsoftAuthProvider.getTokenFromCache()
 
     if (response) {
+        minecraftAuthProvider = new MinecraftAuthProvider(response.accessToken)
+
         await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+
         mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, response.account)
     } else {
         mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
@@ -47,7 +52,9 @@ let checkCache = async () => {
 }
 
 ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
-    const response = await authProvider.login()
+    const response = await microsoftAuthProvider.login()
+
+    minecraftAuthProvider = new MinecraftAuthProvider(response.accessToken)
 
     await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
 
@@ -55,7 +62,7 @@ ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
 })
 
 ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
-    await authProvider.logout()
+    await microsoftAuthProvider.logout()
 
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })

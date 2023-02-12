@@ -5,8 +5,9 @@ const path = require("path")
 
 const CACHE_PATH = path.join(app.getPath("appData"), ".twicusslauncher/cache")
 const CACHE_FILE = "microsoft.json"
+const SCOPE = ["XboxLive.SignIn"]
 
-class AuthProvider {
+class MicrosoftAuthProvider {
     msalConfig
     clientApplication
     cryptoProvider
@@ -27,7 +28,7 @@ class AuthProvider {
             return response
         } else {
             const interactiveRequest = {
-                scopes: [],
+                scopes: SCOPE,
             }
 
             response = await this.getTokenInteractive(interactiveRequest)
@@ -58,7 +59,7 @@ class AuthProvider {
         if (accounts.length > 0) {
             const silentRequest = {
                 account: accounts[0],
-                scopes: [],
+                scopes: SCOPE,
             }
 
             const response = await this.getTokenSilent(silentRequest)
@@ -120,4 +121,4 @@ class AuthProvider {
     }
 }
 
-module.exports = AuthProvider
+module.exports = MicrosoftAuthProvider

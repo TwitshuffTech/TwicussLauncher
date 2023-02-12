@@ -38,10 +38,14 @@ app.on('activate', () => {
 });
 
 let checkCache = async () => {
-    const response = await microsoftAuthProvider.getTokenFromCache()
+    const response = await microsoftAuthProvider.getTokenSilent()
 
     if (response) {
         minecraftAuthProvider = new MinecraftAuthProvider(response.accessToken)
+        await minecraftAuthProvider.getXboxLiveToken()
+        await minecraftAuthProvider.getMinecraftToken()
+        await minecraftAuthProvider.authMinecraft()
+        await minecraftAuthProvider.getProfile()
 
         await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
 

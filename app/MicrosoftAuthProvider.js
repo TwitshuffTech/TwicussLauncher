@@ -18,20 +18,32 @@ class MicrosoftAuthProvider {
         this.msalConfig = msalConfig
         this.clientApplication = new PublicClientApplication(this.msalConfig)
         this.cryptoProvider = new CryptoProvider()
+    }
+
+    async initializeCache() {
         this.cache = this.clientApplication.getTokenCache()
-        this.account = null
+
+        await this.loadCacheFile()
+        const accounts = await this.cache.getAllAccounts()
+        
+        if (accounts) {
+            this.account = accounts[0]
+        } else {
+            this.account = null
+        }
     }
 
     async login() {
-        let response = await this.getTokenFromCache()
+        if (!this.cache) {
+            await this.initializeCache()
+        }
+
+        let response = await this.getTokenSilent()
+
         if (response) {
             return response
         } else {
-            const interactiveRequest = {
-                scopes: SCOPE,
-            }
-
-            response = await this.getTokenInteractive(interactiveRequest)
+            response = await this.getTokenInteractive()
             this.saveCacheFile()
             this.account = response.account
             return response
@@ -52,28 +64,20 @@ class MicrosoftAuthProvider {
         }
     }
 
-    async getTokenFromCache() {
-        await this.loadCacheFile()
-        const accounts = await this.cache.getAllAccounts()
-
-        if (accounts.length > 0) {
+    async getTokenSilent() {
+        if (!this.cache) {
+            await this.initializeCache()
+        }
+        
+        try {
+            if (!this.account) {
+                return null
+            }
             const silentRequest = {
-                account: accounts[0],
+                account: this.account,
                 scopes: SCOPE,
             }
-
-            const response = await this.getTokenSilent(silentRequest)
-            this.saveCacheFile()
-            this.account = response.account
-            return response
-        } else {
-            return null
-        }
-    }
-
-    async getTokenSilent(request) {
-        try {
-            const response = await this.clientApplication.acquireTokenSilent(request)
+            const response = await this.clientApplication.acquireTokenSilent(silentRequest)
             console.log("\nSuccessful silent token acquisition")
             console.log("\nResponse: \n", response)
 
@@ -83,14 +87,17 @@ class MicrosoftAuthProvider {
         }
     }
 
-    async getTokenInteractive(request) {
+    async getTokenInteractive() {
         try {
+            const interactiveRequest = {
+                scopes: SCOPE,
+            }
             const openBrowser = async (url) => {
                 await shell.openExternal(url)
             }
 
             const response = await this.clientApplication.acquireTokenInteractive({
-                ...request,
+                ...interactiveRequest,
                 openBrowser,
                 successTemplete: "<h1>Successfully signed in!</h1> <p>You can close this window now.</p>",
                 errorTemplate: "<h1>Oops! Something went wrong</h1> <p>Check the console for more information.</p>",

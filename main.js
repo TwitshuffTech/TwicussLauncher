@@ -6,9 +6,10 @@ const childProcess = require("child_process")
 
 const MicrosoftAuthProvider = require("./app/MicrosoftAuthProvider")
 const MinecraftAuthProvider = require("./app/MinecraftAuthProvider")
+const VersionHandler = require("./app/version/VersionHandler.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
-const setting_1_12_2 = require("./app/version/setting_1_12_2.js")
+const { VERSIONS } = require("./app/version/versions.js")
 
 let microsoftAuthProvider
 let minecraftAuthProvider
@@ -75,10 +76,14 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })
 
-ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, () => {
+ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     console.log("running minecraft...")
 
-    const args = setting_1_12_2.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minercaftAuthToken)
+    const versionHandler = new VersionHandler(VERSIONS.FORGE1_12_2)
+    await versionHandler.downloadFile()
+    await versionHandler.downloadLibraries()
+    const args = versionHandler.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
+    //const args = setting_1_12_2.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
 
     const exec = util.promisify(childProcess.exec)
     exec(`java ${args}`)

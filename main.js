@@ -36,22 +36,22 @@ app.on('activate', () => {
 });
 
 let checkCache = async () => {
-    const account = await authProvider.getAccount()
+    const response = await authProvider.getTokenFromCache()
 
-    if (account) {
+    if (response) {
         await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
-        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, account)
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, response.account)
     } else {
         mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
     }
 }
 
 ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
-    const account = await authProvider.login()
+    const response = await authProvider.login()
 
     await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
 
-    mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, account)
+    mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, response.account)
 })
 
 ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {

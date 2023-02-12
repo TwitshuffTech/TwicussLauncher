@@ -22,57 +22,38 @@ class AuthProvider {
     }
 
     async login() {
-        const accounts = await this.cache.getAllAccounts()
-
-        let response
-
-        if (accounts.length > 0) {
-            const silentRequest = {
-                account: accounts[0],
-                scopes: [],
-            }
-
-            try {
-                response = await this.clientApplication.acquireTokenSilent(silentRequest)
-                console.log("\nSuccessful silent token acquisition")
-                console.log("\nResponse: \n", response)
-            } catch (error) {
-                console.log(error)
-            }
+        let response = await this.getTokenFromCache()
+        if (response) {
+            return response
         } else {
             const interactiveRequest = {
                 scopes: [],
             }
 
-            try {
-                const openBrowser = async (url) => {
-                    await shell.openExternal(url)
-                }
-
-                response = await this.clientApplication.acquireTokenInteractive({
-                    ...interactiveRequest,
-                    openBrowser,
-                    successTemplete: "<h1>Successfully signed in!</h1> <p>You can close this window now.</p>",
-                    errorTemplate: "<h1>Oops! Something went wrong</h1> <p>Check the console for more information.</p>",
-                })
-                console.log("\nSuccessful interactive token acquisition")
-                console.log("\nResponse: \n", response)
-            } catch (error) {
-                console.log(error)
-            }
+            response = await this.getTokenInteractive(interactiveRequest)
+            this.saveCacheFile()
+            this.account = response.account
+            return response
         }
-
-        this.saveCacheFile()
-        return response.account
     }
 
-    async getAccount() {
+    async logout() {
+        if (!this.account) {
+            return
+        }
+
+        try {
+            await this.cache.removeAccount(this.account)
+            this.saveCacheFile()
+            this.account = null
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async getTokenFromCache() {
         await this.loadCacheFile()
         const accounts = await this.cache.getAllAccounts()
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        console.log(accounts)
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        console.log(accounts.length)
 
         if (accounts.length > 0) {
             const silentRequest = {
@@ -80,19 +61,45 @@ class AuthProvider {
                 scopes: [],
             }
 
-            console.log("HIHIIHI")
-
-            try {
-                const response = await this.clientApplication.acquireTokenSilent(silentRequest)
-                console.log("\nSuccessful silent token acquisition")
-                console.log("\nResponse: \n", response)
-
-                return response.account
-            } catch (error) {
-                console.log(error)
-            }
+            const response = await this.getTokenSilent(silentRequest)
+            this.saveCacheFile()
+            this.account = response.account
+            return response
         } else {
             return null
+        }
+    }
+
+    async getTokenSilent(request) {
+        try {
+            const response = await this.clientApplication.acquireTokenSilent(request)
+            console.log("\nSuccessful silent token acquisition")
+            console.log("\nResponse: \n", response)
+
+            return response
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async getTokenInteractive(request) {
+        try {
+            const openBrowser = async (url) => {
+                await shell.openExternal(url)
+            }
+
+            const response = await this.clientApplication.acquireTokenInteractive({
+                ...request,
+                openBrowser,
+                successTemplete: "<h1>Successfully signed in!</h1> <p>You can close this window now.</p>",
+                errorTemplate: "<h1>Oops! Something went wrong</h1> <p>Check the console for more information.</p>",
+            })
+            console.log("\nSuccessful interactive token acquisition")
+            console.log("\nResponse: \n", response)
+
+            return response
+        } catch (error) {
+            console.log(error)
         }
     }
 

@@ -23,7 +23,6 @@ let createWindow = () => {
 
 app.whenReady().then(() => {
     createWindow()
-    mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })
 
 app.on("window-all-closed", () => {
@@ -39,7 +38,12 @@ app.on('activate', () => {
 let checkCache = async () => {
     const account = await authProvider.getAccount()
 
-    mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, account)
+    if (account) {
+        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, account)
+    } else {
+        mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
+    }
 }
 
 ipcMain.on(IPC_MESSAGES.LOGIN, async () => {

@@ -3,7 +3,8 @@ const { app, shell } = require("electron")
 const fs = require("fs")
 const path = require("path")
 
-const CACHE_PATH = path.join(app.getPath("userData"), "Cache/microsoft.json")
+const CACHE_PATH = path.join(app.getPath("appData"), ".twicusslauncher/cache")
+const CACHE_FILE = "microsoft.json"
 
 class AuthProvider {
     msalConfig
@@ -21,7 +22,7 @@ class AuthProvider {
     }
 
     async login() {
-        let accounts = this.cache.getAllAccounts()
+        const accounts = await this.cache.getAllAccounts()
 
         let response
 
@@ -61,14 +62,17 @@ class AuthProvider {
             }
         }
 
+        this.saveCacheFile()
         return response.account
     }
 
     async getAccount() {
-        let accounts = this.cache.getAllAccounts()
+        await this.loadCacheFile()
+        const accounts = await this.cache.getAllAccounts()
         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        console.log(this.cache)
+        console.log(accounts)
         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        console.log(accounts.length)
 
         if (accounts.length > 0) {
             const silentRequest = {
@@ -76,8 +80,10 @@ class AuthProvider {
                 scopes: [],
             }
 
+            console.log("HIHIIHI")
+
             try {
-                response = await this.clientApplication.acquireTokenSilent(silentRequest)
+                const response = await this.clientApplication.acquireTokenSilent(silentRequest)
                 console.log("\nSuccessful silent token acquisition")
                 console.log("\nResponse: \n", response)
 
@@ -87,6 +93,22 @@ class AuthProvider {
             }
         } else {
             return null
+        }
+    }
+
+    async loadCacheFile() {
+        if (fs.existsSync(path.join(CACHE_PATH, CACHE_FILE))) {
+            this.cache.deserialize(await fs.readFileSync(path.join(CACHE_PATH, CACHE_FILE), "utf-8"))
+            console.log("loaded login cache file")
+        }
+    }
+
+    async saveCacheFile() {
+        if (this.cache.hasChanged) {
+            if (!fs.existsSync(CACHE_PATH)) {
+                fs.mkdirSync(CACHE_PATH.toString(), { recursive: true })
+            }
+            await fs.writeFileSync(path.join(CACHE_PATH, CACHE_FILE), this.cache.serialize())
         }
     }
 }

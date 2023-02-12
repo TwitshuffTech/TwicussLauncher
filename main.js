@@ -70,3 +70,7 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
 
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })
+
+ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, () => {
+    console.log("running minecraft...")
+})

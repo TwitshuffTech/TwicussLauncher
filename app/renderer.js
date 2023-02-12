@@ -8,8 +8,6 @@ window.renderer.showWelcomeMessage((event, account) => {
     }
 
     welcomeDiv.innerHTML = `Welcome ${account.name}`
-    signInButton.hidden = true
-    signOutButton.hidden = false
 })
 
 signInButton.addEventListener("click", () => {

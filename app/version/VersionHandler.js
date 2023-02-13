@@ -102,6 +102,22 @@ class VersionHandler {
         }
     }
 
+    async downloadAssets() {
+        if (this.vanilaVersionHandler) {
+            this.vanilaVersionHandler.downloadAssets()
+        } else {
+            if (!fs.existsSync(path.join(GAME_DIRECTORY, `assets/indexes/${this.jsonLoader.getAssetIndex().id}.json`))) {
+                downloader.downloadAndSave(this.jsonLoader.getAssetIndex().url, path.join(GAME_DIRECTORY, `assets/indexes/${this.jsonLoader.getAssetIndex().id}.json`))
+                const assetsJSON = await downloader.downloadJSON(this.jsonLoader.getAssetIndex().url)
+
+                for (let name in assetsJSON.objects) {
+                    const hashPath = assetsJSON.objects[name].hash.slice(0, 2) + "/" + assetsJSON.objects[name].hash
+                    await downloader.downloadAndSave(`https://resources.download.minecraft.net/${hashPath}`, path.join(GAME_DIRECTORY, `assets/objects/${hashPath}`))
+                }
+            }
+        }
+    }
+
     getLibraryPaths(libraries) {
         const paths = []
         

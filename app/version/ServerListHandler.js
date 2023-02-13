@@ -50,9 +50,10 @@ class ServerListHandler {
     async prepareToRunMinecraft(userName, uuid, minecraftAuthToken) {
         await this.versionHandler.downloadFile()
         await this.versionHandler.downloadLibraries(this.versionHandler.nativeDirectory)
+        await this.versionHandler.downloadAssets()
         await this.downloadMods()
         await this.downloadServersDat()
-        return await this.versionHandler.getArgs(userName, uuid, minecraftAuthToken)
+        return this.versionHandler.getArgs(userName, uuid, minecraftAuthToken)
     }
 }
 

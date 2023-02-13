@@ -110,5 +110,5 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     const exec = util.promisify(childProcess.exec)
     exec(`java ${args}`)
 
-    app.quit()
+    //app.quit()
 })

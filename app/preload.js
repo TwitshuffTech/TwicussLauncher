@@ -13,4 +13,7 @@ contextBridge.exposeInMainWorld("renderer", {
     showWelcomeMessage: (func) => {
         ipcRenderer.on("SHOW_WELCOME_MESSAGE", (event, ...args) => func(event, ...args))
     },
+    showRunStatus: (func) => {
+        ipcRenderer.on("SHOW_RUN_STATUS", (event, ...args) => func(event, ...args))
+    }
 })

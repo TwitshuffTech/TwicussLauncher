@@ -10,6 +10,8 @@ const ServerListHandler = require("./app/version/ServerListHandler.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 
+const VERSION = "1.0"
+
 let microsoftAuthProvider
 let minecraftAuthProvider
 let mainWindow

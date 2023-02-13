@@ -6,10 +6,9 @@ const childProcess = require("child_process")
 
 const MicrosoftAuthProvider = require("./app/MicrosoftAuthProvider")
 const MinecraftAuthProvider = require("./app/MinecraftAuthProvider")
-const VersionHandler = require("./app/version/VersionHandler.js")
+const ServerListHandler = require("./app/version/ServerListHandler.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
-const { VERSIONS } = require("./app/version/versions.js")
 
 let microsoftAuthProvider
 let minecraftAuthProvider
@@ -79,11 +78,9 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     console.log("running minecraft...")
 
-    const versionHandler = new VersionHandler(VERSIONS.FORGE1_12_2)
-    await versionHandler.downloadFile()
-    await versionHandler.downloadLibraries(versionHandler.nativeDirectory)
-    const args = versionHandler.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
-    //const args = setting_1_12_2.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
+    const serverListHandler = new ServerListHandler()
+    await serverListHandler.loadServerJSON("http://twicusstumble.ddns.net/mods/twicuss1.12.2.json")
+    const args = await serverListHandler.prepareToRunMinecraft(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
 
     const exec = util.promisify(childProcess.exec)
     exec(`java ${args}`)

@@ -11,32 +11,29 @@ const ForgeJSONLoader = require("./ForgeJSONLoader")
 const GAME_DIRECTORY = path.join(app.getPath("appData"), ".minecraft")
 
 class VersionHandler {
-    VERSION
+    serverInfo
 
     jsonPath
     clientPath
 
     nativeDirectory
 
-    json
-    forgeJson
-
     vanilaVersionHandler
 
     jsonLoader
 
-    constructor(VERSION) {
-        this.VERSION = VERSION
-        this.jsonPath = path.join(GAME_DIRECTORY, "versions/" + this.VERSION["version"] + "/" + this.VERSION["version"] + ".json")
-        this.clientPath = path.join(GAME_DIRECTORY, "versions/" + this.VERSION["version"] + "/" + this.VERSION["version"] + ".jar")
+    constructor(serverInfo) {
+        this.serverInfo = serverInfo
+        this.jsonPath = path.join(GAME_DIRECTORY, "versions/" + this.serverInfo["version"] + "/" + this.serverInfo["version"] + ".json")
+        this.clientPath = path.join(GAME_DIRECTORY, "versions/" + this.serverInfo["version"] + "/" + this.serverInfo["version"] + ".jar")
 
-        this.nativeDirectory = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/" + this.VERSION["version"] + "/natives")
+        this.nativeDirectory = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/" + this.serverInfo["version"] + "/natives")
         if (!fs.existsSync(this.nativeDirectory)) {
             fs.mkdirSync(this.nativeDirectory, { recursive: true })
         }
 
-        if (this.VERSION["type"] == "forge") {
-            this.vanilaVersionHandler = new VersionHandler(this.VERSION["vanila"])
+        if (this.serverInfo["type"] == "forge") {
+            this.vanilaVersionHandler = new VersionHandler(this.serverInfo["vanila"])
         }
     }
 
@@ -50,11 +47,11 @@ class VersionHandler {
         }
         
         if (!this.exists()) {
-            await downloader.downloadAndSave(this.VERSION["jsonURL"], this.jsonPath)
-            await downloader.downloadAndSave(this.VERSION["clientURL"], this.clientPath)
+            await downloader.downloadAndSave(this.serverInfo["jsonURL"], this.jsonPath)
+            await downloader.downloadAndSave(this.serverInfo["clientURL"], this.clientPath)
         }
 
-        if (this.VERSION["type"] == "forge") {
+        if (this.serverInfo["type"] == "forge") {
             this.jsonLoader = new ForgeJSONLoader(this.jsonPath)
             await this.jsonLoader.load()
         } else {
@@ -129,7 +126,7 @@ class VersionHandler {
     }
 
     getArgs(userName, uuid, minecraftAuthToken) {
-        if (this.VERSION["type"] == "minecraft") {
+        if (this.serverInfo["type"] == "minecraft") {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries())
 
             const JVM_ARGS = [
@@ -157,7 +154,7 @@ class VersionHandler {
 
             return JVM_ARGS.join(' ') + " " + MAIN_CLASS + " " + GAME_ARGS.join(' ')
 
-        } else if (this.VERSION["type"] == "forge") {
+        } else if (this.serverInfo["type"] == "forge") {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries().concat(this.vanilaVersionHandler.jsonLoader.getLibraries()))
 
             const JVM_ARGS = [

@@ -4,6 +4,8 @@ const fs = require("fs")
 
 exports.donwloadJSON = async (url) => {
     const request = await axios.get(url)
+    const serverData = await axios.get("https://mcapi.us/server/status?ip=twicusstumble.ddns.net")
+    console.log(serverData.data)
     return request.data
 }
 

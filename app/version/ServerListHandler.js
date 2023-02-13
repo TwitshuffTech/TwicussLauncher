@@ -41,10 +41,17 @@ class ServerListHandler {
         }
     }
 
+    downloadServersDat() {
+        if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"))) {
+            downloader.downloadAndSave(this.serverJSON.servers_dat, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"))
+        }
+    }
+
     async prepareToRunMinecraft(userName, uuid, minecraftAuthToken) {
         await this.versionHandler.downloadFile()
         await this.versionHandler.downloadLibraries(this.versionHandler.nativeDirectory)
         await this.downloadMods()
+        await this.downloadServersDat()
         return await this.versionHandler.getArgs(userName, uuid, minecraftAuthToken)
     }
 }

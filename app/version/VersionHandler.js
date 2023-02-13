@@ -91,7 +91,7 @@ class VersionHandler {
             if (!url) {
                 url = library.downloads.artifact.url
             }
-            
+
             if (url && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
                 await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
             }
@@ -135,19 +135,19 @@ class VersionHandler {
             const JVM_ARGS = [
                 `"-Dos.name=Windows 10" -Dos.version=10.0`,
                 `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
-                `-Djava.library.path=${this.nativeDirectory}`,
+                `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
-                `-Dminecraft.client.jar=${this.clientPath}`,
-                `-cp ${libraries.join(';')}`,
+                `-Dminecraft.client.jar=${this.clientPath.replaceAll(" ", "\\ ")}`,
+                `-cp ${libraries.join(';').replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
             ]
             const MAIN_CLASS = this.jsonLoader.getMainClass()
             const GAME_ARGS = [
                 `--username ${userName}`,
                 `--version ${this.jsonLoader.getId()}`,
-                `--gameDir ${path.join(app.getPath("appData"), `.twicusslauncher/minecraft/${this.jsonLoader.getId()}`)}`,
-                `--assetsDir ${path.join(GAME_DIRECTORY, "assets")}`,
+                `--gameDir ${path.join(app.getPath("appData"), `.twicusslauncher/minecraft/${this.jsonLoader.getId()}`).replaceAll(" ", "\\ ")}`,
+                `--assetsDir ${path.join(GAME_DIRECTORY, "assets").replaceAll(" ", "\\ ")}`,
                 `--assetIndex ${this.jsonLoader.getAssetIndex().id}`,
                 `--uuid ${uuid}`,
                 `--accessToken ${minecraftAuthToken}`,
@@ -163,19 +163,19 @@ class VersionHandler {
             const JVM_ARGS = [
                 `"-Dos.name=Windows 10" -Dos.version=10.0`,
                 `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
-                `-Djava.library.path=${this.nativeDirectory}`,
+                `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
-                `-Dminecraft.client.jar=${this.clientPath}`,
-                `-cp ${libraries.join(';')}`,
+                `-Dminecraft.client.jar=${this.clientPath.replaceAll(" ", "\\ ")}`,
+                //`-cp ${libraries.join(';').replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
             ]
             const MAIN_CLASS = this.jsonLoader.getMainClass()
             const GAME_ARGS = [
                 `--username ${userName}`,
                 `--version ${this.jsonLoader.getId()}`,
-                `--gameDir ${path.join(app.getPath("appData"), `.twicusslauncher/minecraft/${this.jsonLoader.getId()}`)}`,
-                `--assetsDir ${path.join(GAME_DIRECTORY, "assets")}`,
+                `--gameDir ${path.join(app.getPath("appData"), `.twicusslauncher/minecraft/${this.jsonLoader.getId()}`).replaceAll(" ", "\\ ")}`,
+                `--assetsDir ${path.join(GAME_DIRECTORY, "assets").replaceAll(" ", "\\ ")}`,
                 `--assetIndex ${this.vanilaVersionHandler.jsonLoader.getAssetIndex().id}`,
                 `--uuid ${uuid}`,
                 `--accessToken ${minecraftAuthToken}`,

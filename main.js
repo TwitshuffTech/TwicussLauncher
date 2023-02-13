@@ -81,7 +81,7 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     const versionHandler = new VersionHandler(VERSIONS.FORGE1_12_2)
     await versionHandler.downloadFile()
-    await versionHandler.downloadLibraries()
+    await versionHandler.downloadLibraries(versionHandler.nativeDirectory)
     const args = versionHandler.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
     //const args = setting_1_12_2.getArgs(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
 

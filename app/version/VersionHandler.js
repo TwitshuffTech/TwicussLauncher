@@ -1,6 +1,7 @@
 const { app } = require("electron")
 const path = require("path")
 const fs = require("fs")
+const unzip = require("extract-zip")
 
 const downloader = require("../downloader.js")
 
@@ -11,8 +12,11 @@ const GAME_DIRECTORY = path.join(app.getPath("appData"), ".minecraft")
 
 class VersionHandler {
     VERSION
+
     jsonPath
     clientPath
+
+    nativeDirectory
 
     json
     forgeJson
@@ -25,6 +29,11 @@ class VersionHandler {
         this.VERSION = VERSION
         this.jsonPath = path.join(GAME_DIRECTORY, "versions/" + this.VERSION["version"] + "/" + this.VERSION["version"] + ".json")
         this.clientPath = path.join(GAME_DIRECTORY, "versions/" + this.VERSION["version"] + "/" + this.VERSION["version"] + ".jar")
+
+        this.nativeDirectory = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/" + this.VERSION["version"] + "/natives")
+        if (!fs.existsSync(this.nativeDirectory)) {
+            fs.mkdirSync(this.nativeDirectory, { recursive: true })
+        }
 
         if (this.VERSION["type"] == "forge") {
             this.vanilaVersionHandler = new VersionHandler(this.VERSION["vanila"])
@@ -54,24 +63,29 @@ class VersionHandler {
         }
     }
 
-    async downloadLibraries() {
+    async downloadLibraries(nativeDirectory) {
         if (this.vanilaVersionHandler) {
-            this.vanilaVersionHandler.downloadLibraries()
+            this.vanilaVersionHandler.downloadLibraries(this.nativeDirectory)
         }
 
         for (let library of this.jsonLoader.getLibraries()) {
             let address
             let url
+            let isNative = false
+
             if ("natives" in library) {
                 if (process.platform == "win32" && "windows" in library.natives) {
                     address = library.downloads.classifiers["natives-windows"].path
                     url = library.downloads.classifiers["natives-windows"].url
+                    isNative = true
                 } else if (process.platform == "darwin" && "osx" in library.natives) {
                     address = library.downloads.classifiers["natives-osx"].path
                     url = library.downloads.classifiers["natives-osx"].url
+                    isNative = true
                 } else if (process.platform == "linux" && "linux" in library.natives) {
                     address = library.downloads.classifiers["natives-linux"].path
                     url = library.downloads.classifiers["natives-linux"].url
+                    isNative = true
                 }
             } else {
                 address = library.downloads.artifact.path
@@ -81,37 +95,47 @@ class VersionHandler {
             if (address && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
                 await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
             }
+
+            if (isNative) {
+                await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
+            }
         }
+    }
+
+    getLibraryPaths(libraries) {
+        const paths = []
+        
+        for (let library of libraries) {
+            if ("extract" in library) {
+                continue
+            }
+            let address
+            if ("natives" in library) {
+                if (process.platform == "win32" && "windows" in library.natives) {
+                    address = library.downloads.classifiers["natives-windows"].path
+                } else if (process.platform == "darwin" && "osx" in library.natives) {
+                    address = library.downloads.classifiers["natives-osx"].path
+                } else if (process.platform == "linux" && "linux" in library.natives) {
+                    address = library.downloads.classifiers["natives-linux"].path
+                }
+            } else {
+                address = library.downloads.artifact.path
+            }
+            paths.push(path.join(GAME_DIRECTORY, "libraries/" + address))
+        }
+        paths.push(this.clientPath)
+
+        return paths
     }
 
     getArgs(userName, uuid, minecraftAuthToken) {
         if (this.VERSION["type"] == "minecraft") {
-            const libraries = []
-
-            for (let library of this.jsonLoader.getLibraries()) {
-                if ("extract" in library) {
-                    continue
-                }
-                let address
-                if ("natives" in library) {
-                    if (process.platform == "win32" && "windows" in library.natives) {
-                        address = library.downloads.classifiers["natives-windows"].path
-                    } else if (process.platform == "darwin" && "osx" in library.natives) {
-                        address = library.downloads.classifiers["natives-osx"].path
-                    } else if (process.platform == "linux" && "linux" in library.natives) {
-                        address = library.downloads.classifiers["natives-linux"].path
-                    }
-                } else {
-                    address = library.downloads.artifact.path
-                }
-                libraries.push(path.join(GAME_DIRECTORY, "libraries/" + address))
-            }
-            libraries.push(this.clientPath)
+            const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries())
 
             const JVM_ARGS = [
                 `"-Dos.name=Windows 10" -Dos.version=10.0`,
                 `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
-                `-Djava.library.path=${path.join(GAME_DIRECTORY, "bin/664ffd52c57ab778a66525626e44d9d3545735fd")}`,
+                `-Djava.library.path=${this.nativeDirectory}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
                 `-Dminecraft.client.jar=${this.clientPath}`,
@@ -134,32 +158,12 @@ class VersionHandler {
             return JVM_ARGS.join(' ') + " " + MAIN_CLASS + " " + GAME_ARGS.join(' ')
 
         } else if (this.VERSION["type"] == "forge") {
-            const libraries = []
-
-            for (let library of this.jsonLoader.getLibraries().concat(this.vanilaVersionHandler.jsonLoader.getLibraries())) {
-                if ("extract" in library) {
-                    continue
-                }
-                let address
-                if ("natives" in library) {
-                    if (process.platform == "win32" && "windows" in library.natives) {
-                        address = library.downloads.classifiers["natives-windows"].path
-                    } else if (process.platform == "darwin" && "osx" in library.natives) {
-                        address = library.downloads.classifiers["natives-osx"].path
-                    } else if (process.platform == "linux" && "linux" in library.natives) {
-                        address = library.downloads.classifiers["natives-linux"].path
-                    }
-                } else {
-                    address = library.downloads.artifact.path
-                }
-                libraries.push(path.join(GAME_DIRECTORY, "libraries/" + address))
-            }
-            libraries.push(this.clientPath)
+            const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries().concat(this.vanilaVersionHandler.jsonLoader.getLibraries()))
 
             const JVM_ARGS = [
                 `"-Dos.name=Windows 10" -Dos.version=10.0`,
                 `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
-                `-Djava.library.path=${path.join(GAME_DIRECTORY, "bin/536f782a83ade8b9ff4452bf096fb20f6817f2bf")}`,
+                `-Djava.library.path=${this.nativeDirectory}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
                 `-Dminecraft.client.jar=${this.clientPath}`,

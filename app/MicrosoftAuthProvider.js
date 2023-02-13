@@ -98,8 +98,8 @@ class MicrosoftAuthProvider {
             const response = await this.clientApplication.acquireTokenInteractive({
                 ...interactiveRequest,
                 openBrowser,
-                successTemplete: "<h1>Successfully signed in!</h1> <p>You can close this window now.</p>",
-                errorTemplate: "<h1>Oops! Something went wrong</h1> <p>Check the console for more information.</p>",
+                successTemplete: "<p>サインインが完了しました。このウィンドウを閉じてください。</p>",
+                errorTemplate: "<p>サインインに失敗しました。</p>",
             })
             console.log("\nSuccessful interactive token acquisition")
 

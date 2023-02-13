@@ -14,7 +14,7 @@
       "package.json"
     ],
     "mac": {
-      "target": "app",
+      "target": ["dmg"],
       "icon": "build/icon.png"
     },
     "win": {

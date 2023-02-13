@@ -1,4 +1,4 @@
-const { app, ipcMain, BrowserWindow } = require("electron")
+const { app, ipcMain, BrowserWindow, Menu } = require("electron")
 const fs = require("fs")
 const path = require("path")
 const util = require("util")
@@ -18,8 +18,6 @@ let createWindow = () => {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
-        titleBarStyle: "hidden",
-        titleBarOverlay: true,
         webPreferences: {
             preload: path.join(__dirname, "app/preload.js")
         },
@@ -28,6 +26,9 @@ let createWindow = () => {
     microsoftAuthProvider = new MicrosoftAuthProvider(msalConfig)
     autoLogin()
 }
+
+const menu = new Menu()
+Menu.setApplicationMenu(menu)
 
 app.whenReady().then(() => {
     createWindow()
@@ -94,4 +95,6 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     const exec = util.promisify(childProcess.exec)
     exec(`java ${args}`)
+
+    app.quit()
 })

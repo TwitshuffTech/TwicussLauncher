@@ -12,7 +12,7 @@ const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
 
-const VERSION = "1.0"
+const VERSION = "1.0.0"
 
 let microsoftAuthProvider
 let minecraftAuthProvider

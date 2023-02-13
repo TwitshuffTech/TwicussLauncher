@@ -33,7 +33,6 @@ class MinecraftAuthProvider {
         }
         const request = await axios.post("https://user.auth.xboxlive.com/user/authenticate", data, config)
         this.xboxLiveToken = request.data.Token
-        console.log(`XBL Token: ${this.xboxLiveToken}`)
     }
 
     async getMinecraftToken() {
@@ -56,8 +55,6 @@ class MinecraftAuthProvider {
         const request = await axios.post("https://xsts.auth.xboxlive.com/xsts/authorize", data, config)
         this.minecraftToken = request.data.Token
         this.userHash = request.data.DisplayClaims.xui[0].uhs
-        console.log(`XSTS Token: ${this.minecraftToken}`)
-        console.log(`UserHash: ${this.userHash}`)
     }
 
     async authMinecraft() {
@@ -66,7 +63,6 @@ class MinecraftAuthProvider {
         }
         const request = await axios.post("https://api.minecraftservices.com/authentication/login_with_xbox", data)
         this.minecraftAuthToken = request.data.access_token
-        console.log(`Minecraft Token: ${this.minecraftAuthToken}`)
     }
 
     async checkGameOwnership() {
@@ -89,8 +85,6 @@ class MinecraftAuthProvider {
             const request = await axios.get("https://api.minecraftservices.com/minecraft/profile", config)
             this.uuid = request.data.id
             this.userName = request.data.name
-            console.log(`uuid: ${this.uuid}`)
-            console.log(`Player name: ${this.userName}`)
         }
     }
 }

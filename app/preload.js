@@ -7,7 +7,13 @@ contextBridge.exposeInMainWorld("renderer", {
     sendSignoutMessage: () => {
         ipcRenderer.send("LOGOUT")
     },
+    sendRunMinecraftMessage: () => {
+        ipcRenderer.send("RUN_MINECRAFT")
+    },
     showWelcomeMessage: (func) => {
         ipcRenderer.on("SHOW_WELCOME_MESSAGE", (event, ...args) => func(event, ...args))
+    },
+    showRunStatus: (func) => {
+        ipcRenderer.on("SHOW_RUN_STATUS", (event, ...args) => func(event, ...args))
     }
 })

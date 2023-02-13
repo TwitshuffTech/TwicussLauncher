@@ -79,7 +79,6 @@ class MicrosoftAuthProvider {
             }
             const response = await this.clientApplication.acquireTokenSilent(silentRequest)
             console.log("\nSuccessful silent token acquisition")
-            console.log("\nResponse: \n", response)
 
             return response
         } catch (error) {
@@ -103,7 +102,6 @@ class MicrosoftAuthProvider {
                 errorTemplate: "<h1>Oops! Something went wrong</h1> <p>Check the console for more information.</p>",
             })
             console.log("\nSuccessful interactive token acquisition")
-            console.log("\nResponse: \n", response)
 
             return response
         } catch (error) {

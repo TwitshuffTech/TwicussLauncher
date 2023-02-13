@@ -31,8 +31,8 @@ let createWindow = () => {
     autoLogin()
 }
 
-const menu = new Menu()
-Menu.setApplicationMenu(menu)
+//const menu = new Menu()
+//Menu.setApplicationMenu(menu)
 
 app.whenReady().then(() => {
     createWindow()

@@ -8,7 +8,7 @@ const downloader = require("../downloader.js")
 const JSONLoader = require("./JSONLoader")
 const ForgeJSONLoader = require("./ForgeJSONLoader")
 
-const GAME_DIRECTORY = path.join(app.getPath("appData"), ".minecraft")
+const GAME_DIRECTORY = (process.platform == "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft")
 
 class VersionHandler {
     serverInfo
@@ -62,14 +62,14 @@ class VersionHandler {
 
     async downloadLibraries(nativeDirectory) {
         if (this.vanilaVersionHandler) {
-            this.vanilaVersionHandler.downloadLibraries(this.nativeDirectory)
+            await this.vanilaVersionHandler.downloadLibraries(this.nativeDirectory)
         }
 
         for (let library of this.jsonLoader.getLibraries()) {
             let address
             let url
             let isNative = false
-
+            
             if ("natives" in library) {
                 if (process.platform == "win32" && "windows" in library.natives) {
                     address = library.downloads.classifiers["natives-windows"].path
@@ -84,12 +84,15 @@ class VersionHandler {
                     url = library.downloads.classifiers["natives-linux"].url
                     isNative = true
                 }
-            } else {
+            }
+            if (!address) {
                 address = library.downloads.artifact.path
+            }
+            if (!url) {
                 url = library.downloads.artifact.url
             }
-
-            if (address && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
+            
+            if (url && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
                 await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
             }
 

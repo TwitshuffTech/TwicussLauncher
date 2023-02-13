@@ -63,7 +63,6 @@ class MinecraftAuthProvider {
         }
         const request = await axios.post("https://api.minecraftservices.com/authentication/login_with_xbox", data)
         this.minecraftAuthToken = request.data.access_token
-        console.log(`Minecraft Token: ${this.minecraftAuthToken}`)
     }
 
     async checkGameOwnership() {

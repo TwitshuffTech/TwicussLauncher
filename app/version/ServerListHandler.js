@@ -16,7 +16,7 @@ class ServerListHandler {
     }
 
     async loadServerJSON(url) {
-        this.serverJSON = await downloader.donwloadJSON(url)
+        this.serverJSON = await downloader.downloadJSON(url)
         this.createVersionHandler()
     }
 

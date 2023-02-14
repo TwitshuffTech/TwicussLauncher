@@ -94,10 +94,9 @@ class VersionHandler {
 
             if (url && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
                 await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
-            }
-
-            if (isNative) {
-                await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
+                if (isNative) {
+                    await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
+                }
             }
         }
     }
@@ -155,7 +154,7 @@ class VersionHandler {
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
                 `-Dminecraft.client.jar=${this.clientPath.replaceAll(" ", "\\ ")}`,
-                `-cp ${libraries.join(';').replaceAll(" ", "\\ ")}`,
+                `-cp ${((process.platform == "win32") ? libraries.join(';') : libraries.join(':')).replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
             ]
             const MAIN_CLASS = this.jsonLoader.getMainClass()
@@ -177,13 +176,14 @@ class VersionHandler {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries().concat(this.vanilaVersionHandler.jsonLoader.getLibraries()))
 
             const JVM_ARGS = [
-                `"-Dos.name=Windows 10" -Dos.version=10.0`,
-                `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
+                //`"-Dos.name=Windows 10" -Dos.version=10.0`,
+                //`-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
+                `-XstartOnFirstThread`,
                 `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
                 `-Dminecraft.client.jar=${this.clientPath.replaceAll(" ", "\\ ")}`,
-                //`-cp ${libraries.join(';').replaceAll(" ", "\\ ")}`,
+                `-cp ${((process.platform == "win32") ? libraries.join(';') : libraries.join(':')).replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
             ]
             const MAIN_CLASS = this.jsonLoader.getMainClass()

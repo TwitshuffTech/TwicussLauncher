@@ -176,9 +176,9 @@ class VersionHandler {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries().concat(this.vanilaVersionHandler.jsonLoader.getLibraries()))
 
             const JVM_ARGS = [
-                //`"-Dos.name=Windows 10" -Dos.version=10.0`,
-                //`-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
-                `-XstartOnFirstThread`,
+                `"-Dos.name=Windows 10" -Dos.version=10.0`,
+                `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
+                //`-XstartOnFirstThread`,
                 `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,

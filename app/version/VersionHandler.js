@@ -92,11 +92,16 @@ class VersionHandler {
                 url = library.downloads.artifact.url
             }
 
-            if (url && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
-                await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
-                if (isNative) {
-                    await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
-                }
+            if (!fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
+                if (url) {
+                    await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
+                } else {
+                    await downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address))
+                }                
+            }
+
+            if (isNative && !fs.existsSync(path.join(nativeDirectory, "META-INF"))) {
+                await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
             }
         }
     }

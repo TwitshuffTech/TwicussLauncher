@@ -112,6 +112,7 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     if (process.platform == "win32") {
         exec(`java ${args}`, (error, stdout, stderror) => {
+            console.log(error)
             if (error) {
                 dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました。適切なバージョンのJavaがインストールされていない可能性があります。`})
             }

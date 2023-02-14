@@ -27,6 +27,7 @@ class ServerListHandler {
             "version": this.serverJSON.version,
             "jsonURL": this.serverJSON.jsonURL,
             "clientURL": this.serverJSON.clientURL,
+            "preClientURL": this.serverJSON.preClientURL,
             "vanila": this.serverJSON.vanila,
         }
         this.versionHandler = new VersionHandler(serverInfo)

@@ -27,6 +27,7 @@ class ServerListHandler {
             "version": this.serverJSON.version,
             "jsonURL": this.serverJSON.jsonURL,
             "clientURL": this.serverJSON.clientURL,
+            "preClientURL": this.serverJSON.preClientURL,
             "vanila": this.serverJSON.vanila,
         }
         this.versionHandler = new VersionHandler(serverInfo)
@@ -65,6 +66,7 @@ class ServerListHandler {
 
     async prepareToRunMinecraft(userName, uuid, minecraftAuthToken) {
         await this.versionHandler.downloadFile()
+        await this.versionHandler.downloadJava()
         await this.versionHandler.downloadLibraries(this.versionHandler.nativeDirectory)
         await this.versionHandler.downloadAssets()
         await this.downloadMods()

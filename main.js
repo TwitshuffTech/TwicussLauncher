@@ -110,15 +110,22 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     
     const exec = util.promisify(childProcess.exec)
 
+    let javaPath
     if (process.platform == "win32") {
-        exec(`java ${args}`, (error, stdout, stderror) => {
-            if (error) {
-                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました。適切なバージョンのJavaがインストールされていない可能性があります。`})
-            }
-        })
-    } else {
+        javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe")
+    } else if (process.platform == "darwin") {
+        //javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java")
         exec("open /Applications/Minecraft.app").then(() => {
             app.quit()
+        })
+    }
+
+    if (javaPath) {
+        exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
+            console.log(error)
+            if (error) {
+                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました`})
+            }
         })
     }
 })

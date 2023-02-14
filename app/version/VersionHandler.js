@@ -1,7 +1,9 @@
 const { app } = require("electron")
 const path = require("path")
 const fs = require("fs")
+const axios = require("axios")
 const unzip = require("extract-zip")
+const tar = require("tar")
 
 const downloader = require("../downloader.js")
 
@@ -9,6 +11,7 @@ const JSONLoader = require("./JSONLoader")
 const ForgeJSONLoader = require("./ForgeJSONLoader")
 
 const GAME_DIRECTORY = (process.platform == "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft")
+const LAUNCHER_DIRECTORY = path.join(app.getPath("appData"), ".twicusslauncher/minecraft")
 
 class VersionHandler {
     serverInfo
@@ -37,7 +40,7 @@ class VersionHandler {
         }
     }
 
-    exists() {
+    versionExists() {
         return fs.existsSync(this.jsonPath) && fs.existsSync(this.clientPath)
     }
 
@@ -46,7 +49,7 @@ class VersionHandler {
             await this.vanilaVersionHandler.downloadFile()
         }
         
-        if (!this.exists()) {
+        if (!this.versionExists()) {
             await downloader.downloadAndSave(this.serverInfo["jsonURL"], this.jsonPath)
             await downloader.downloadAndSave(this.serverInfo["clientURL"], this.clientPath)
         }
@@ -57,6 +60,28 @@ class VersionHandler {
         } else {
             this.jsonLoader = new JSONLoader(this.jsonPath)
             await this.jsonLoader.load()
+        }
+    }
+
+    async downloadJava() {
+        const javaComponent = (this.vanilaVersionHandler) ? this.vanilaVersionHandler.jsonLoader.getJavaVersion() : this.jsonLoader.getJavaVersion()
+        if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent))) {
+            if (javaComponent == "jre-legacy") {
+                let url
+                if (process.platform == "win32") {
+                    url = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_x64_windows_hotspot_8u362b09.zip"
+                    await downloader.downloadAndSave(url, path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()))
+
+                    fs.mkdirSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent), { recursive: true })
+                    await unzip(path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()), { dir: path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent) })
+                } else if (process.platform == "darwin") {
+                    url = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_x64_mac_hotspot_8u362b09.tar.gz"
+                    await downloader.downloadAndSave(url, path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()))
+
+                    fs.mkdirSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent), { recursive: true })
+                    await tar.extract({ file: path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()), cwd: path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent) })
+                }
+            }
         }
     }
 
@@ -92,11 +117,16 @@ class VersionHandler {
                 url = library.downloads.artifact.url
             }
 
-            if (url && !fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
-                await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
-                if (isNative) {
-                    await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
-                }
+            if (!fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
+                if (url) {
+                    await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
+                } else {
+                    await downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address))
+                }                
+            }
+
+            if (isNative && !fs.existsSync(path.join(nativeDirectory, "META-INF"))) {
+                await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
             }
         }
     }
@@ -148,8 +178,6 @@ class VersionHandler {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries())
 
             const JVM_ARGS = [
-                `"-Dos.name=Windows 10" -Dos.version=10.0`,
-                `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
                 `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
@@ -157,6 +185,13 @@ class VersionHandler {
                 `-cp ${((process.platform == "win32") ? libraries.join(';') : libraries.join(':')).replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
             ]
+            if (process.platform == "win32") {
+                JVM_ARGS.push(`"-Dos.name=Windows 10" -Dos.version=10.0`)
+                JVM_ARGS.push(`-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`)
+            } else if (process.platform == "darwin") {
+                JVM_ARGS.push(`-XstartOnFirstThread`)
+            }
+
             const MAIN_CLASS = this.jsonLoader.getMainClass()
             const GAME_ARGS = [
                 `--username ${userName}`,
@@ -176,9 +211,6 @@ class VersionHandler {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries().concat(this.vanilaVersionHandler.jsonLoader.getLibraries()))
 
             const JVM_ARGS = [
-                `"-Dos.name=Windows 10" -Dos.version=10.0`,
-                `-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`,
-                //`-XstartOnFirstThread`,
                 `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
                 `-Dminercaft.launcher.version=${"1.0"}`,
@@ -186,6 +218,13 @@ class VersionHandler {
                 `-cp ${((process.platform == "win32") ? libraries.join(';') : libraries.join(':')).replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
             ]
+            if (process.platform == "win32") {
+                JVM_ARGS.push(`"-Dos.name=Windows 10" -Dos.version=10.0`)
+                JVM_ARGS.push(`-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`)
+            } else if (process.platform == "darwin") {
+                JVM_ARGS.push(`-XstartOnFirstThread`)
+            }
+
             const MAIN_CLASS = this.jsonLoader.getMainClass()
             const GAME_ARGS = [
                 `--username ${userName}`,

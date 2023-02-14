@@ -1,9 +1,9 @@
 # Twicuss Launcher
 
-サーバーから不足しているModやMinecraft本体の構成要素を自動でダウンロードします。  
-数クリックでついかす鯖にログインできます。  
+サーバーから不足しているModやMinecraft本体の構成要素を自動でダウンロードします  
+数クリックでついかす鯖にログインできます  
 
-# Feature
+# Features
 
 ・Minecraft本体の起動  
 ・forge, modなどの自動ダウンロード  

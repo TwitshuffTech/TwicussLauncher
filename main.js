@@ -117,7 +117,7 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
             }
         })
     } else {
-        exec("open Minecraft.app").then(() => {
+        exec("open /Applications/Minecraft.app").then(() => {
             app.quit()
         })
     }

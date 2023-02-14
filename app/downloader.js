@@ -4,8 +4,8 @@ const fs = require("fs")
 
 exports.downloadJSON = async (url) => {
     const response = await axios.get(url)
-    const serverData = await axios.get("https://mcapi.us/server/status?ip=twicusstumble.ddns.net")
-    console.log(serverData.data)
+    // const serverData = await axios.get("https://mcapi.us/server/status?ip=twicusstumble.ddns.net")
+    // console.log(serverData.data)
     return response.data
 }
 

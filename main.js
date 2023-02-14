@@ -31,8 +31,8 @@ let createWindow = () => {
     autoLogin()
 }
 
-const menu = new Menu()
-Menu.setApplicationMenu(menu)
+//const menu = new Menu()
+//Menu.setApplicationMenu(menu)
 
 app.whenReady().then(() => {
     createWindow()
@@ -105,10 +105,20 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     const serverListHandler = new ServerListHandler()
     await serverListHandler.loadServerJSON("http://twicusstumble.ddns.net/mods/twicuss1.12.2.json")
+
     const args = await serverListHandler.prepareToRunMinecraft(minecraftAuthProvider.userName, minecraftAuthProvider.uuid, minecraftAuthProvider.minecraftAuthToken)
-
+    
     const exec = util.promisify(childProcess.exec)
-    exec(`java ${args}`)
 
-    //app.quit()
+    if (process.platform == "win32") {
+        exec(`java ${args}`, (error, stdout, stderror) => {
+            if (error) {
+                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました。適切なバージョンのJavaがインストールされていない可能性があります。`})
+            }
+        })
+    } else {
+        exec("open /Applications/Minecraft.app").then(() => {
+            app.quit()
+        })
+    }
 })

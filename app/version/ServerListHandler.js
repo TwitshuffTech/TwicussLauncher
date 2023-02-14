@@ -66,6 +66,7 @@ class ServerListHandler {
 
     async prepareToRunMinecraft(userName, uuid, minecraftAuthToken) {
         await this.versionHandler.downloadFile()
+        await this.versionHandler.downloadJava()
         await this.versionHandler.downloadLibraries(this.versionHandler.nativeDirectory)
         await this.versionHandler.downloadAssets()
         await this.downloadMods()

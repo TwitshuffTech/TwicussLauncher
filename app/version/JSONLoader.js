@@ -24,6 +24,10 @@ class JSONLoader {
         return this.file.id
     }
 
+    getJavaVersion() {
+        return this.file.javaVersion.component
+    }
+
     getLibraries() {
         return this.file.libraries
     }

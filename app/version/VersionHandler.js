@@ -25,6 +25,15 @@ class VersionHandler {
 
     jsonLoader
 
+    // 引数について
+    // serverInfo = {
+    //     "type": "minecraft" or "forge",
+    //     "version": "{バージョン（バージョン.jsonのid）}",
+    //     "jsonURL": "{バージョン.jsonのづアンロードURL}",
+    //     "clientURL": "{バージョン.jarのダウンロードURL}",
+    //     "preClientURL": "{ビルド前のforgeバージョン.jarのダウンロードURL（typeがforgeの場合のみ）}",
+    //     "vanila": "{再帰的にVersionHandlerに渡す引数（typeがforgeの場合のみ）}"
+    // }
     constructor(serverInfo) {
         this.serverInfo = serverInfo
         this.jsonPath = path.join(GAME_DIRECTORY, "versions/" + this.serverInfo["version"] + "/" + this.serverInfo["version"] + ".json")
@@ -40,10 +49,12 @@ class VersionHandler {
         }
     }
 
+    // バージョン.jsonと.jarが存在するか確認
     versionExists() {
         return fs.existsSync(this.jsonPath) && fs.existsSync(this.clientPath)
     }
 
+    // バージョン.jsonと.jar（forgeバージョンの場合はforgeも）をダウンロードする
     async downloadFile() {
         if (this.vanilaVersionHandler) {
             await this.vanilaVersionHandler.downloadFile()
@@ -63,6 +74,7 @@ class VersionHandler {
         }
     }
 
+    // バージョンに合わせてjavaランタイムをダウンロードする
     async downloadJava() {
         const javaComponent = (this.vanilaVersionHandler) ? this.vanilaVersionHandler.jsonLoader.getJavaVersion() : this.jsonLoader.getJavaVersion()
         if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent))) {
@@ -121,10 +133,11 @@ class VersionHandler {
                 if (url) {
                     await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address))
                 } else {
-                    await downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address))
+                    await downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address)) // urlが記載されてないのは現状ビルド前のforgeバージョン.jarだけのためとりあえずこの場合分けで
                 }                
             }
 
+            // nativesファイルだったらnativeDirectoryに展開する
             if (isNative && !fs.existsSync(path.join(nativeDirectory, "META-INF"))) {
                 await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
             }
@@ -173,6 +186,7 @@ class VersionHandler {
         return paths
     }
 
+    // Minecraftの実行時引数を返す
     getArgs(userName, uuid, minecraftAuthToken) {
         if (this.serverInfo["type"] == "minecraft") {
             const libraries = this.getLibraryPaths(this.jsonLoader.getLibraries())

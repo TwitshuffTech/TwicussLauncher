@@ -5,7 +5,7 @@ const path = require("path")
 
 const CACHE_PATH = path.join(app.getPath("appData"), ".twicusslauncher/cache")
 const CACHE_FILE = "microsoft.json"
-const SCOPE = ["XboxLive.SignIn"]
+const SCOPE = ["XboxLive.SignIn"] // MicrosoftトークンからXboxLiveトークンを交換するときにこれがないとエラーが出る
 
 class MicrosoftAuthProvider {
     msalConfig
@@ -20,6 +20,7 @@ class MicrosoftAuthProvider {
         this.cryptoProvider = new CryptoProvider()
     }
 
+    // キャッシュファイルからMicrosoftアカウント情報を読み込む
     async initializeCache() {
         this.cache = this.clientApplication.getTokenCache()
 
@@ -64,6 +65,7 @@ class MicrosoftAuthProvider {
         }
     }
 
+    // （メモリ上の）キャッシュのアカウント情報からクライアントの操作なしにMicrosoftトークンを得る
     async getTokenSilent() {
         if (!this.cache) {
             await this.initializeCache()
@@ -98,7 +100,7 @@ class MicrosoftAuthProvider {
             const response = await this.clientApplication.acquireTokenInteractive({
                 ...interactiveRequest,
                 openBrowser,
-                successTemplete: "<p>サインインが完了しました。このウィンドウを閉じてください。</p>",
+                successTemplete: "<p>サインインが完了しました。このウィンドウを閉じてください。</p>", // なぜかうまく表示されない
                 errorTemplate: "<p>サインインに失敗しました。</p>",
             })
             console.log("\nSuccessful interactive token acquisition")

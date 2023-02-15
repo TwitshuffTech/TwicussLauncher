@@ -17,6 +17,32 @@ class ServerListHandler {
     }
 
     async loadServerJSON(url) {
+        // server.jsonについて
+        // {
+        //     "type": "minecraft" or "forge",
+        //     "version": "{バージョン（バージョン.jsonのid）}",
+        //     "jsonURL": "{バージョン.jsonのづアンロードURL}",
+        //     "clientURL": "{バージョン.jarのダウンロードURL}",
+        //     "preClientURL": "{ビルド前のforgeバージョン.jarのダウンロードURL（typeがforgeの場合のみ}",
+        //     "vanila": { 再帰的にVersionHandlerに渡す引数（typeがforgeの場合のみ）
+        //         "type": "minecraft",
+        //         "version": "{バニラのバージョン}",
+        //         "jsonURL": "{バニラバージョン.jsonのダウンロードURL}",
+        //         "clientURL": "{バニラバージョン.jarのダウンロードURL}"
+        //     },
+        //     "servers.dat": "{ゲームディレクトリに加えるservers.datのダウンロードURL}",
+        //     "mods": [
+        //         {
+        //             "name": "{modのファイル名（拡張子込み）}",
+        //             "url": "{modのダウンロードURL}",
+        //         },
+        //         {
+
+        //         },
+        //         ...
+        //     ],
+        //     "icon": "{server_profilesに加える画像データ（Base64 encoded）}"
+        // }
         this.serverJSON = await downloader.downloadJSON(url)
         this.createVersionHandler()
     }
@@ -64,6 +90,7 @@ class ServerListHandler {
         }
     }
 
+    // Minecraftの実行時引数を返すことに注意
     async prepareToRunMinecraft(userName, uuid, minecraftAuthToken) {
         await this.versionHandler.downloadFile()
         await this.versionHandler.downloadJava()

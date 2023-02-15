@@ -15,6 +15,7 @@ class MinecraftAuthProvider {
         this.microsoftAccessToken = microsoftAccessToken
     }
 
+    // XboxLiveトークン（XBL Token）の取得
     async getXboxLiveToken() {
         const config = {
             headers: {
@@ -35,6 +36,7 @@ class MinecraftAuthProvider {
         this.xboxLiveToken = response.data.Token
     }
 
+    // XboxLiveのゲームトークン（XSTS Token）の取得
     async getMinecraftToken() {
         const config = {
             headers: {
@@ -57,6 +59,8 @@ class MinecraftAuthProvider {
         this.userHash = response.data.DisplayClaims.xui[0].uhs
     }
 
+
+    // Minecraftトークン（Minecraft Access Token）の取得
     async authMinecraft() {
         const data = {
             "identityToken": `XBL3.0 x=${this.userHash};${this.minecraftToken}`,
@@ -72,7 +76,7 @@ class MinecraftAuthProvider {
             }
         }
         const response = await axios.get("https://api.minecraftservices.com/entitlements/mcstore", config)
-        return response.data.items.length
+        return response.data.items.length // MicrosoftアカウントにMinecraftを所有していない場合、0を返す
     }
 
     async getProfile() {

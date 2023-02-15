@@ -41,23 +41,29 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
-        app.quit();
+        app.quit(); // macではウィンドウを閉じてもアプリが終了しないように
     }
 });
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
+        createWindow(); // macでアプリアイコンがクリックされたときにウィンドウがない場合新たに生成する
     }
 });
 
+// 起動にアプリケーション更新の有無を確認
 const checkUpdate = async () => {
+    // twicusslauncher.jsonについて
+    // {
+    //     "latset_version": "{バージョン（1.0.0など）}"
+    // }
     const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
     if (appVersionJSON.latest_version !== VERSION) {
         dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
     }
 }
 
+// アプリ起動時に自動ログインを試みる。その可否で遷移ページを振り分け
 const autoLogin = async () => {
     const response = await microsoftAuthProvider.getTokenSilent()
 
@@ -115,6 +121,7 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
         javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe")
     } else if (process.platform == "darwin") {
         //javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java")
+        // macでコンソールから起動しようとするとjavaのruntimeエラーが出る。しょうがなくMinecraft.appを起動することで妥協
         exec("open /Applications/Minecraft.app").then(() => {
             app.quit()
         })

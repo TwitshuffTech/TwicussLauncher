@@ -65,17 +65,18 @@ const checkUpdate = async () => {
 
 // アプリ起動時に自動ログインを試みる。その可否で遷移ページを振り分け
 const autoLogin = async () => {
-    const response = await microsoftAuthProvider.getTokenSilent()
+    // const response = await microsoftAuthProvider.getTokenSilent()
 
-    if (response) {
-        await authorizeAccount(response)
+    // if (response) {
+    //     await authorizeAccount(response)
 
-        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+    //     await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
 
-        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
-    } else {
-        mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
-    }
+    //     mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
+    // } else {
+    //     mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
+    // }
+    mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 }
 
 ipcMain.on(IPC_MESSAGES.LOGIN, async () => {

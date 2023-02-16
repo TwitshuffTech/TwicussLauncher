@@ -35,20 +35,41 @@ class MicrosoftAuthProvider {
     }
 
     async login() {
-        if (!this.cache) {
-            await this.initializeCache()
+        // if (!this.cache) {
+        //     await this.initializeCache()
+        // }
+
+        // let response = await this.getTokenSilent()
+
+        // if (response) {
+        //     return response
+        // } else {
+        //     response = await this.getTokenInteractive()
+        //     this.saveCacheFile()
+        //     this.account = response.account
+        //     return response
+        // }
+        const { verifier, challenge } = await this.cryptoProvider.generatePkceCodes()
+
+        const authCodeUrlParams = {
+            scopes: SCOPE,
+            redirectUri: "https://login.microsoftonline.com/common/oauth2/nativeclient",
+            codeChallenge: challenge,
+            codeChallengeMethod: "S256"
         }
 
-        let response = await this.getTokenSilent()
+        const response = await this.clientApplication.getAuthCodeUrl(authCodeUrlParams)
+        console.log(response)
 
-        if (response) {
-            return response
-        } else {
-            response = await this.getTokenInteractive()
-            this.saveCacheFile()
-            this.account = response.account
-            return response
+        const tokenRequest = {
+            code: response["authorization_code"],
+            codeVerifier: verifier,
+            redirectUri: "https://login.microsoftonline.com/common/oauth2/nativeclient",
+            scopes: SCOPE
         }
+
+        const tokenResponse = await this.clientApplication.acquireTokenByCode(tokenRequest)
+        console.log("\nResponse: \n:", tokenResponse)
     }
 
     async logout() {

@@ -80,7 +80,7 @@ class MinecraftAuthProvider {
     }
 
     async getProfile() {
-        if (this.checkGameOwnership()) {
+        if (await this.checkGameOwnership()) {
             const config = {
                 headers: {
                     "Authorization": `Bearer ${this.minecraftAuthToken}`,

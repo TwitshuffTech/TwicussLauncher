@@ -68,11 +68,7 @@ const autoLogin = async () => {
     const token = await microsoftAuthProvider.autoLogin()
 
     if (token) {
-        await authorizeAccount(token)
-
-        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
-
-        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
+        transiteToMain(token)
     } else {
         mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
     }
@@ -93,21 +89,29 @@ ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
 
             const token = await microsoftAuthProvider.exchangeToken(code)
             if (token) {
-                await authorizeAccount(token)
-
-                await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
-
-                mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
-                console.log(minecraftAuthProvider.userName)
+                transiteToMain(token)
+                loginWindow.close()
             }
-
-            loginWindow.close()
         } else if (newUrl.startsWith("https://login.microsoftonline.com/common/oauth2/nativeclient?error=")) {
             console.log("Access denied.")
             loginWindow.close()
         }
     })
 })
+
+const transiteToMain = async (token) => {
+    mainWindow.loadFile(path.join(__dirname, "app/html/loginTransition.html"))
+
+    await authorizeAccount(token)
+    if (!await minecraftAuthProvider.checkGameOwnership()) {
+        dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftを所有していません`})
+        mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
+        microsoftAuthProvider.logout()
+    } else {
+        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
+    }
+}
 
 const authorizeAccount = async (microsoftToken) => {
     minecraftAuthProvider = new MinecraftAuthProvider(microsoftToken)

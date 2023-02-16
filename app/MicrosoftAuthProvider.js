@@ -62,7 +62,7 @@ class MicrosoftAuthProvider {
         console.log(response)
 
         const tokenRequest = {
-            code: response["authorization_code"],
+            code: "M.R3_BAY.a25e53b8-9595-7bad-efb3-15e3dee9ef49",
             codeVerifier: verifier,
             redirectUri: "https://login.microsoftonline.com/common/oauth2/nativeclient",
             scopes: SCOPE

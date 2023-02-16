@@ -31,8 +31,8 @@ let createWindow = () => {
     autoLogin()
 }
 
-//const menu = new Menu()
-//Menu.setApplicationMenu(menu)
+const menu = new Menu()
+Menu.setApplicationMenu(menu)
 
 app.whenReady().then(() => {
     createWindow()
@@ -80,6 +80,7 @@ ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
     let loginWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        frame: false
     })
     loginWindow.loadURL(loginUrl)
 

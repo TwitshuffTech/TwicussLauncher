@@ -1,4 +1,4 @@
-const { app, ipcMain, dialog, BrowserWindow, Menu } = require("electron")
+const { app, ipcMain, dialog, shell, BrowserWindow, Menu } = require("electron")
 const fs = require("fs")
 const path = require("path")
 const util = require("util")
@@ -65,34 +65,52 @@ const checkUpdate = async () => {
 
 // アプリ起動時に自動ログインを試みる。その可否で遷移ページを振り分け
 const autoLogin = async () => {
-    // const response = await microsoftAuthProvider.getTokenSilent()
+    const token = await microsoftAuthProvider.autoLogin()
 
-    // if (response) {
-    //     await authorizeAccount(response)
-
-    //     await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
-
-    //     mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
-    // } else {
-    //     mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
-    // }
-    mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
-}
-
-ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
-    const response = await microsoftAuthProvider.login()
-
-    if (response) {
-        await authorizeAccount(response)
+    if (token) {
+        await authorizeAccount(token)
 
         await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
 
         mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
+    } else {
+        mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
     }
+}
+
+ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
+    const loginUrl = await microsoftAuthProvider.getAuthCodeUrl()
+
+    let loginWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+    })
+    loginWindow.loadURL(loginUrl)
+
+    loginWindow.webContents.on("will-redirect", async (event, newUrl) => {
+        if (newUrl.startsWith("https://login.microsoftonline.com/common/oauth2/nativeclient?code=")) {
+            const code = newUrl.substring(newUrl.indexOf("?code=") + 6, newUrl.indexOf("&"))
+
+            const token = await microsoftAuthProvider.exchangeToken(code)
+            if (token) {
+                await authorizeAccount(token)
+
+                await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+
+                mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
+                console.log(minecraftAuthProvider.userName)
+            }
+
+            loginWindow.close()
+        } else if (newUrl.startsWith("https://login.microsoftonline.com/common/oauth2/nativeclient?error=")) {
+            console.log("Access denied.")
+            loginWindow.close()
+        }
+    })
 })
 
-const authorizeAccount = async (microsoftResponse) => {
-    minecraftAuthProvider = new MinecraftAuthProvider(microsoftResponse.accessToken)
+const authorizeAccount = async (microsoftToken) => {
+    minecraftAuthProvider = new MinecraftAuthProvider(microsoftToken)
     await minecraftAuthProvider.getXboxLiveToken()
     await minecraftAuthProvider.getMinecraftToken()
     await minecraftAuthProvider.authMinecraft()
@@ -102,7 +120,6 @@ const authorizeAccount = async (microsoftResponse) => {
 ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
     await microsoftAuthProvider.logout()
     
-    minecraftAuthProvider = null
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })
 

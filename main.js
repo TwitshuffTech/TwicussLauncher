@@ -8,6 +8,7 @@ const axios = require("axios")
 const MicrosoftAuthProvider = require("./app/MicrosoftAuthProvider")
 const MinecraftAuthProvider = require("./app/MinecraftAuthProvider")
 const ServerListHandler = require("./app/version/ServerListHandler.js")
+const ServerStatus = require("./app/ServerStatus.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
@@ -16,18 +17,20 @@ const VERSION = "1.0.0"
 
 let microsoftAuthProvider
 let minecraftAuthProvider
+let serverStatus
 let mainWindow
 
 let createWindow = () => {
     mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 650,
         webPreferences: {
             preload: path.join(__dirname, "app/preload.js")
         },
     })
 
     microsoftAuthProvider = new MicrosoftAuthProvider(msalConfig)
+    serverStatus = new ServerStatus()
     autoLogin()
 }
 
@@ -103,23 +106,22 @@ ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
 const transiteToMain = async (token) => {
     mainWindow.loadFile(path.join(__dirname, "app/html/loginTransition.html"))
 
-    await authorizeAccount(token)
+    minecraftAuthProvider = new MinecraftAuthProvider()
+    await minecraftAuthProvider.authMinecraft(token)
+
     if (!await minecraftAuthProvider.checkGameOwnership()) {
         dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftを所有していません`})
         mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
         microsoftAuthProvider.logout()
     } else {
         await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
-        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
-    }
-}
 
-const authorizeAccount = async (microsoftToken) => {
-    minecraftAuthProvider = new MinecraftAuthProvider(microsoftToken)
-    await minecraftAuthProvider.getXboxLiveToken()
-    await minecraftAuthProvider.getMinecraftToken()
-    await minecraftAuthProvider.authMinecraft()
-    await minecraftAuthProvider.getProfile()
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_PLAYER_NAME, minecraftAuthProvider.userName)
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_SKIN_VIEWER, await minecraftAuthProvider.get3DSkinImage())
+
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_SERVER_STATUS, await serverStatus.getServerStatus())
+        
+    }
 }
 
 ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {

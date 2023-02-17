@@ -1,4 +1,3 @@
-const { net } = require("electron")
 const axios = require("axios")
 
 class MinecraftAuthProvider {
@@ -10,13 +9,12 @@ class MinecraftAuthProvider {
     uuid
     userName
     
-    constructor(microsoftAccessToken) {
-        console.log("MinecraftAuth instance constructed")
-        this.microsoftAccessToken = microsoftAccessToken
+    constructor() {
+
     }
 
     // XboxLiveトークン（XBL Token）の取得
-    async getXboxLiveToken() {
+    async getXBLToken() {
         const config = {
             headers: {
                 "Content-Type": "application/json",
@@ -37,7 +35,7 @@ class MinecraftAuthProvider {
     }
 
     // XboxLiveのゲームトークン（XSTS Token）の取得
-    async getMinecraftToken() {
+    async getXSTSToken() {
         const config = {
             headers: {
                 "Content-Type": "application/json",
@@ -61,7 +59,7 @@ class MinecraftAuthProvider {
 
 
     // Minecraftトークン（Minecraft Access Token）の取得
-    async authMinecraft() {
+    async getMinecraftToken() {
         const data = {
             "identityToken": `XBL3.0 x=${this.userHash};${this.minecraftToken}`,
         }
@@ -90,6 +88,27 @@ class MinecraftAuthProvider {
             this.uuid = response.data.id
             this.userName = response.data.name
         }
+    }
+
+    async authMinecraft(microsoftAccessToken) {
+        this.microsoftAccessToken = microsoftAccessToken
+        await this.getXBLToken()
+        await this.getXSTSToken()
+        await this.getMinecraftToken()
+        await this.getProfile()
+    }
+
+    async get3DSkinImage() {
+        const config = {
+            responseType: "arraybuffer",
+            params: {
+                scale: 3,
+                default: "MHF_Steve",
+                overlay: "true",
+            }
+        }
+        const response = await axios.get(`https://crafatar.com/renders/body/${this.uuid}`, config)
+        return Buffer.from(response.data, 'binary').toString("base64")
     }
 }
 

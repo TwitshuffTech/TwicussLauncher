@@ -2,16 +2,42 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="../css/index.css">
         <title>Twicuss Launcher</title>
     </head>
     <body>
-        <div id="WelcomeMessage"></div>
-        <div id="runStatus"><br></div>
-        <button type="button" id="runMinecraft">Minecraftを実行</button>
-        <br>
-        <br>
-        <button type="button" id="signOut">サインアウト</button>
+        <div id="Background" class="background"></div>
 
+        <div class="landing">
+            <div id="RunStatus"><br></div>
+
+            <div class="upper-left">
+                <img id="ServerIcon" class="server-icon"></img>
+                <button type="button" id="signOut" class="sign-out-button">SIGN OUT</button>
+            </div>
+
+            <div class="user-info">
+                <div id="PlayerName"></div>
+                <div class="skin-viewer-base">
+                    <img id="SkinViewer" class="skin-viewer"></img>
+                    <div id="PlayerName" class="player-name"></div>
+                </div>
+            </div>
+
+            <div class="run-buttons">
+                <div id="ServerStatus", class="server-status"></div>
+                <div id="ServerName"></div>
+                <div class="partition"></div>
+                <button type="button" id="runMinecraft" class="play-button">PLAY</button>
+            </div>
+
+            <div class="players">
+                <p class="no-margin">PLAYERS</p>
+                <div id="ServerPlayers"></div>
+            </div>
+        </div>
+
+        <script src="../renderer/randomBackground.js"></script>
         <script src="../renderer/indexRenderer.js"></script>
     </body>
 </html>

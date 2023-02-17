@@ -1,5 +1,5 @@
 const { PublicClientApplication, CryptoProvider } = require("@azure/msal-node")
-const { app, shell } = require("electron")
+const { app } = require("electron")
 const fs = require("fs")
 const path = require("path")
 

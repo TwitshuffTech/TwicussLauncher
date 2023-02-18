@@ -1,4 +1,4 @@
-const { app, ipcMain, dialog, BrowserWindow, Menu } = require("electron")
+const { app, ipcMain, dialog, shell, BrowserWindow, Menu } = require("electron")
 const fs = require("fs")
 const path = require("path")
 const util = require("util")
@@ -8,31 +8,39 @@ const axios = require("axios")
 const MicrosoftAuthProvider = require("./app/MicrosoftAuthProvider")
 const MinecraftAuthProvider = require("./app/MinecraftAuthProvider")
 const ServerListHandler = require("./app/version/ServerListHandler.js")
+const ServerStatus = require("./app/ServerStatus.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
 
-const VERSION = "1.0.0"
+const VERSION = "1.1.0"
 
 let microsoftAuthProvider
 let minecraftAuthProvider
+let serverStatus
 let mainWindow
 
 let createWindow = () => {
     mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 650,
+        titleBarStyle: "hidden",
+        titleBarOverlay: {
+            color: "#161616",
+            symbolColor: "#ffffff"
+        },
         webPreferences: {
             preload: path.join(__dirname, "app/preload.js")
         },
     })
 
     microsoftAuthProvider = new MicrosoftAuthProvider(msalConfig)
+    serverStatus = new ServerStatus()
     autoLogin()
 }
 
-//const menu = new Menu()
-//Menu.setApplicationMenu(menu)
+// const menu = new Menu()
+// Menu.setApplicationMenu(menu)
 
 app.whenReady().then(() => {
     createWindow()
@@ -65,43 +73,65 @@ const checkUpdate = async () => {
 
 // アプリ起動時に自動ログインを試みる。その可否で遷移ページを振り分け
 const autoLogin = async () => {
-    const response = await microsoftAuthProvider.getTokenSilent()
+    const token = await microsoftAuthProvider.autoLogin()
 
-    if (response) {
-        await authorizeAccount(response)
-
-        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
-
-        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
+    if (token) {
+        transiteToMain(token)
     } else {
         mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
     }
 }
 
 ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
-    const response = await microsoftAuthProvider.login()
+    const loginUrl = await microsoftAuthProvider.getAuthCodeUrl()
 
-    if (response) {
-        await authorizeAccount(response)
+    let loginWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        frame: false
+    })
+    loginWindow.loadURL(loginUrl)
 
-        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+    loginWindow.webContents.on("will-redirect", async (event, newUrl) => {
+        if (newUrl.startsWith("https://login.microsoftonline.com/common/oauth2/nativeclient?code=")) {
+            const code = newUrl.substring(newUrl.indexOf("?code=") + 6, newUrl.indexOf("&"))
 
-        mainWindow.webContents.send(IPC_MESSAGES.SHOW_WELCOME_MESSAGE, minecraftAuthProvider.userName)
-    }
+            const token = await microsoftAuthProvider.exchangeToken(code)
+            if (token) {
+                transiteToMain(token)
+                loginWindow.close()
+            }
+        } else if (newUrl.startsWith("https://login.microsoftonline.com/common/oauth2/nativeclient?error=")) {
+            console.log("Access denied.")
+            loginWindow.close()
+        }
+    })
 })
 
-const authorizeAccount = async (microsoftResponse) => {
-    minecraftAuthProvider = new MinecraftAuthProvider(microsoftResponse.accessToken)
-    await minecraftAuthProvider.getXboxLiveToken()
-    await minecraftAuthProvider.getMinecraftToken()
-    await minecraftAuthProvider.authMinecraft()
-    await minecraftAuthProvider.getProfile()
+const transiteToMain = async (token) => {
+    mainWindow.loadFile(path.join(__dirname, "app/html/loginTransition.html"))
+
+    minecraftAuthProvider = new MinecraftAuthProvider()
+    await minecraftAuthProvider.authMinecraft(token)
+
+    if (!await minecraftAuthProvider.checkGameOwnership()) {
+        dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftを所有していません`})
+        mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
+        microsoftAuthProvider.logout()
+    } else {
+        await mainWindow.loadFile(path.join(__dirname, "app/html/index.html"))
+
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_PLAYER_NAME, minecraftAuthProvider.userName)
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_SKIN_VIEWER, await minecraftAuthProvider.get3DSkinImage())
+
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_SERVER_STATUS, await serverStatus.getServerStatus())
+        
+    }
 }
 
 ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
     await microsoftAuthProvider.logout()
     
-    minecraftAuthProvider = null
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })
 

@@ -1,117 +1,86 @@
 const { PublicClientApplication, CryptoProvider } = require("@azure/msal-node")
-const { app, shell } = require("electron")
+const { app } = require("electron")
 const fs = require("fs")
 const path = require("path")
 
 const CACHE_PATH = path.join(app.getPath("appData"), ".twicusslauncher/cache")
-const CACHE_FILE = "microsoft.json"
+const CACHE_FILE = "msal_cache.json"
+
+const REDIRECT_URI = "https://login.microsoftonline.com/common/oauth2/nativeclient"
 const SCOPE = ["XboxLive.SignIn"] // MicrosoftトークンからXboxLiveトークンを交換するときにこれがないとエラーが出る
 
 class MicrosoftAuthProvider {
-    msalConfig
     clientApplication
     cryptoProvider
-    account
+
+    verifier
+    challenge
+
     cache
 
     constructor(msalConfig) {
-        this.msalConfig = msalConfig
-        this.clientApplication = new PublicClientApplication(this.msalConfig)
+        this.clientApplication = new PublicClientApplication(msalConfig)
         this.cryptoProvider = new CryptoProvider()
     }
 
-    // キャッシュファイルからMicrosoftアカウント情報を読み込む
-    async initializeCache() {
-        this.cache = this.clientApplication.getTokenCache()
-
-        await this.loadCacheFile()
-        const accounts = await this.cache.getAllAccounts()
-        
-        if (accounts) {
-            this.account = accounts[0]
-        } else {
-            this.account = null
-        }
-    }
-
-    async login() {
+    async autoLogin() {
         if (!this.cache) {
-            await this.initializeCache()
+            await this.loadCacheFile()
         }
-
-        let response = await this.getTokenSilent()
-
-        if (response) {
-            return response
+        const accounts = await this.cache.getAllAccounts()
+        if (accounts[0]) {
+            return await this.getTokenSilent(accounts[0])
         } else {
-            response = await this.getTokenInteractive()
-            this.saveCacheFile()
-            this.account = response.account
-            return response
+            return null
         }
     }
 
     async logout() {
-        if (!this.account) {
-            return
-        }
-
-        try {
-            await this.cache.removeAccount(this.account)
-            this.saveCacheFile()
-            this.account = null
-        } catch (error) {
-            console.log(error)
-        }
+        const accounts = await this.cache.getAllAccounts()
+        await this.cache.removeAccount(accounts[0])
+        this.saveCacheFile()
     }
 
-    // （メモリ上の）キャッシュのアカウント情報からクライアントの操作なしにMicrosoftトークンを得る
-    async getTokenSilent() {
-        if (!this.cache) {
-            await this.initializeCache()
-        }
-        
-        try {
-            if (!this.account) {
-                return null
-            }
-            const silentRequest = {
-                account: this.account,
-                scopes: SCOPE,
-            }
-            const response = await this.clientApplication.acquireTokenSilent(silentRequest)
-            console.log("\nSuccessful silent token acquisition")
+    async getAuthCodeUrl() {
+        const { verifier, challenge } = await this.cryptoProvider.generatePkceCodes()
+        this.verifier = verifier
+        this.challenge = challenge
 
-            return response
-        } catch (error) {
-            console.log(error)
+        const params = {
+            scopes: SCOPE,
+            redirectUri: REDIRECT_URI,
+            prompt: "select_account",
+            codeChallenge: this.challenge,
+            codeChallengeMethod: "S256"
         }
+
+        return await this.clientApplication.getAuthCodeUrl(params)
     }
 
-    async getTokenInteractive() {
-        try {
-            const interactiveRequest = {
-                scopes: SCOPE,
-            }
-            const openBrowser = async (url) => {
-                await shell.openExternal(url)
-            }
-
-            const response = await this.clientApplication.acquireTokenInteractive({
-                ...interactiveRequest,
-                openBrowser,
-                successTemplete: "<p>サインインが完了しました。このウィンドウを閉じてください。</p>", // なぜかうまく表示されない
-                errorTemplate: "<p>サインインに失敗しました。</p>",
-            })
-            console.log("\nSuccessful interactive token acquisition")
-
-            return response
-        } catch (error) {
-            console.log(error)
+    async exchangeToken(authorizationCode) {
+        const request = {
+            code: authorizationCode,
+            codeVerifier: this.verifier,
+            redirectUri: REDIRECT_URI,
+            scopes: SCOPE
         }
+
+        const response = await this.clientApplication.acquireTokenByCode(request)
+        this.saveCacheFile()
+        return response.accessToken
+    }
+
+    async getTokenSilent(account) {
+        const request = {
+            account: account,
+            scopes: SCOPE
+        }
+        const response = await this.clientApplication.acquireTokenSilent(request)
+        return response.accessToken
     }
 
     async loadCacheFile() {
+        this.cache = this.clientApplication.getTokenCache()
         if (fs.existsSync(path.join(CACHE_PATH, CACHE_FILE))) {
             this.cache.deserialize(await fs.readFileSync(path.join(CACHE_PATH, CACHE_FILE), "utf-8"))
             console.log("loaded login cache file")
@@ -124,6 +93,7 @@ class MicrosoftAuthProvider {
                 fs.mkdirSync(CACHE_PATH.toString(), { recursive: true })
             }
             await fs.writeFileSync(path.join(CACHE_PATH, CACHE_FILE), this.cache.serialize())
+            console.log("saved login cache file")
         }
     }
 }

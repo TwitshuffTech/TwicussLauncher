@@ -1,0 +1,50 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-Italic-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: italic;
+}
+
+body {
+    margin: 0px;
+    color: white;
+    font-family: "Montserrat";
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2;
+
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: rgb(50, 50, 50);
+}
+
+.background::after {
+    content: "";
+    display: block;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+
+    width: 100%;
+    height: 100%;
+
+    box-shadow: inset 0 0 300px 0 rgba(0, 0, 0, 0.5), inset 0 0 100px 0 rgba(0, 0, 0, 0.9)
+}

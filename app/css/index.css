@@ -1,0 +1,241 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-Italic-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: italic;
+}
+
+body {
+    margin: 0px;
+    color: white;
+    font-family: "Montserrat";
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+.background {
+    position: relative;
+    z-index: -2;
+
+    width: 100%;
+    height: 100vh;
+
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.background::after {
+    content: "";
+    display: block;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+
+    width: 100%;
+    height: 100%; 
+
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 -200px 200px -80px rgba(0, 0, 0, 0.7), inset 0 0 100px 50px rgba(0, 0, 0, 0.2);
+}
+
+.landing {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100vh;
+}
+
+.upper-left {
+    position: absolute;
+    top: 60px;
+    left: 60px;
+
+    width: 300px;
+    height: 84px;
+
+    display: flex;
+    align-items: center;
+}
+
+.server-icon {
+    position: relative;
+
+    width: 64px;
+    height: 64px;
+}
+
+.sign-out-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: relative;
+
+    margin: 20px;
+    
+    font-family: "Montserrat";
+    font-size: 1em;
+    color: rgba(120, 120, 120, 0.8);
+}
+
+.sign-out-button::after {
+    content: "";
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 1px;
+
+    background-color: rgba(120, 120, 120, 0.8);
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.sign-out-button:hover::after {
+    opacity: 1;
+}
+
+.user-info {
+    position: absolute;
+    top: 60px;
+    right: 60px;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.skin-viewer-base {
+    width: 80px;
+    height: 80px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 0 0 0 40px;
+
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.skin-viewer {
+    width: 50%;
+    height: 94%;
+}
+
+.play-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: relative;
+    
+    font-family: "Montserrat";
+    color: white;
+    font-size: 40px;
+}
+
+.play-button::after {
+    content: "";
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 1px;
+
+    background-color: white;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.play-button:hover::after {
+    opacity: 1;
+}
+
+.players {
+    position: absolute;
+    bottom: 60px;
+    left: 60px;
+
+    width: 50px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.server-status {
+    position: relative;
+
+    width: 8px;
+    height: 8px;
+
+    margin: 13px;
+
+    border-radius: 50%;
+    background-color: orangered;
+}
+
+.partition {
+    position: relative;
+
+    width: 2px;
+    height: 40px;
+
+    margin: 0 20px 0 20px;
+    background-color: rgba(120, 120, 120, 0.8);
+}
+
+.run-buttons {
+    position: absolute;
+    bottom: 60px;
+    right: 60px;
+
+    width: 600px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.7);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+}

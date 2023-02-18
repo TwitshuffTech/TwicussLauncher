@@ -10,10 +10,16 @@ contextBridge.exposeInMainWorld("renderer", {
     sendRunMinecraftMessage: () => {
         ipcRenderer.send("RUN_MINECRAFT")
     },
-    showWelcomeMessage: (func) => {
-        ipcRenderer.on("SHOW_WELCOME_MESSAGE", (event, ...args) => func(event, ...args))
+    showPlayerName: (func) => {
+        ipcRenderer.on("SHOW_PLAYER_NAME", (event, ...args) => func(event, ...args))
     },
     showRunStatus: (func) => {
         ipcRenderer.on("SHOW_RUN_STATUS", (event, ...args) => func(event, ...args))
-    }
+    },
+    showSkinViewer: (func) => {
+        ipcRenderer.on("SHOW_SKIN_VIEWER", (event, ...args) => func(event, ...args))
+    },
+    showServerStatus: (func) => {
+        ipcRenderer.on("SHOW_SERVER_STATUS", (event, ...args) => func(event, ...args))
+    },
 })

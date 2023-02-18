@@ -1,7 +1,25 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-Italic-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: italic;
+}
+
 body {
     margin: 0px;
     color: white;
-    font-family: arial;
+    font-family: "Montserrat";
+}
+
+.no-margin {
+    margin: 0px;
 }
 
 .background {
@@ -72,8 +90,9 @@ body {
 
     margin: 20px;
     
+    font-family: "Montserrat";
+    font-size: 1em;
     color: rgba(120, 120, 120, 0.8);
-    font-size: 16px;
 }
 
 .sign-out-button::after {
@@ -134,6 +153,7 @@ body {
 
     position: relative;
     
+    font-family: "Montserrat";
     color: white;
     font-size: 40px;
 }
@@ -170,10 +190,6 @@ body {
     justify-content: flex-start;
 }
 
-.no-margin {
-    margin: 0px;
-}
-
 .server-status {
     position: relative;
 
@@ -207,4 +223,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.7);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
 }

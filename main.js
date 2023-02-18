@@ -13,7 +13,7 @@ const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
 
-const VERSION = "1.0.0"
+const VERSION = "1.1.0"
 
 let microsoftAuthProvider
 let minecraftAuthProvider
@@ -24,6 +24,11 @@ let createWindow = () => {
     mainWindow = new BrowserWindow({
         width: 1000,
         height: 650,
+        titleBarStyle: "hidden",
+        titleBarOverlay: {
+            color: "#161616",
+            symbolColor: "#ffffff"
+        },
         webPreferences: {
             preload: path.join(__dirname, "app/preload.js")
         },
@@ -34,8 +39,8 @@ let createWindow = () => {
     autoLogin()
 }
 
-const menu = new Menu()
-Menu.setApplicationMenu(menu)
+// const menu = new Menu()
+// Menu.setApplicationMenu(menu)
 
 app.whenReady().then(() => {
     createWindow()

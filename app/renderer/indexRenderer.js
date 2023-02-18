@@ -5,6 +5,7 @@ const serverStatus = document.getElementById("ServerStatus")
 const serverName = document.getElementById("ServerName")
 const serverIcon = document.getElementById("ServerIcon")
 const serverPlayers = document.getElementById("ServerPlayers")
+const overlay = document.getElementById("Overlay")
 const signOutButton = document.getElementById("signOut")
 const runMinecraftButton = document.getElementById("runMinecraft")
 
@@ -16,9 +17,7 @@ window.renderer.showPlayerName((event, userName) => {
 })
 
 window.renderer.showRunStatus((event, text) => {
-    if (text) {
-        runStatus.innerHTML = text
-    }
+    overlay.style.display = "flex"
 })
 
 window.renderer.showSkinViewer((event, skinImage) => {
@@ -36,9 +35,13 @@ window.renderer.showServerStatus((event, status) => {
         }
 
         serverName.innerHTML = status["name"]
+
         serverIcon.src = status["icon"]
+
         serverPlayers.innerHTML = `${status["players"]["now"]}/${status["players"]["max"]}`
-        serverPlayers.style.color = "rgba(120, 120, 120, 0.8)"
+        if (status["players"]["now"] === 0) {
+            serverPlayers.style.color = "rgba(120, 120, 120, 0.8)"
+        }
         serverPlayers.style.margin = "0 0 0 20px";
     }
 })

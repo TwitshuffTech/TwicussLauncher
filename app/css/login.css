@@ -1,0 +1,96 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("../resources/font/Montserrat-Italic-VariableFont_wght.woff") format("woff-variations");
+    font-weight: 100 900;
+    font-style: italic;
+}
+
+body {
+    margin: 0px;
+    color: white;
+    font-family: "Montserrat";
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2;
+
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: rgb(50, 50, 50);
+}
+
+.background::after {
+    content: "";
+    display: block;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+
+    width: 100%;
+    height: 100%;
+
+    box-shadow: inset 0 0 300px 0 rgba(0, 0, 0, 0.5), inset 0 0 100px 0 rgba(0, 0, 0, 0.9)
+}
+
+.login-buttons {
+    width: 300px;
+    height: 168px;
+    
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
+
+.login-buttons p {    
+    margin: 0 0 40px 0;
+
+    font-size: 1.3em;
+}
+
+.sign-in-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: relative;
+    
+    font-family: "Montserrat";
+    font-size: 1.3em;
+    color: white;
+
+    padding: 5px 50px 5px 50px;
+    border-radius: 5px;
+    border: 1px solid white;
+
+    transition: 0.3s;
+}
+
+.sign-in-button:hover {
+    background-color: white;
+    color: black;
+}

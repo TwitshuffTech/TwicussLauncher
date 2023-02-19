@@ -1,4 +1,5 @@
-const { app, ipcMain, dialog, shell, BrowserWindow, Menu } = require("electron")
+const { app, ipcMain, dialog, BrowserWindow } = require("electron")
+const { autoUpdater } = require("electron-updater")
 const fs = require("fs")
 const path = require("path")
 const util = require("util")
@@ -13,7 +14,7 @@ const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
 
-const VERSION = "1.1.0"
+const VERSION = require("./package.json").version
 
 let microsoftAuthProvider
 let minecraftAuthProvider
@@ -39,9 +40,6 @@ let createWindow = () => {
     autoLogin()
 }
 
-// const menu = new Menu()
-// Menu.setApplicationMenu(menu)
-
 app.whenReady().then(() => {
     createWindow()
     checkUpdate()
@@ -61,13 +59,22 @@ app.on('activate', () => {
 
 // 起動にアプリケーション更新の有無を確認
 const checkUpdate = async () => {
-    // twicusslauncher.jsonについて
-    // {
-    //     "latset_version": "{バージョン（1.0.0など）}"
-    // }
-    const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
-    if (appVersionJSON.latest_version !== VERSION) {
-        dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
+    if (process.platform == "win32") {
+        autoUpdater.checkForUpdatesAndNotify()
+    } else {
+        // twicusslauncher.jsonについて
+        // {
+        //     "latset_version": "{最新のバージョン（1.0.0など）},"
+        //     "supported_versions": ["{サポートされているバージョン}", "{}", ...]
+        // }
+        const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
+        if (!appVersionJSON.supported_versions.includes(VERSION)) {
+            dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `このバージョン (v${VERSION}) は現在サポートされていません。http://twicusstumble.ddns.net/ から最新のものをダウンロードしてください。`}).then(() => {
+                app.quit()
+            })
+        } else if (appVersionJSON.latest_version !== VERSION) {
+            dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
+        }
     }
 }
 

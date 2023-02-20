@@ -144,7 +144,6 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
 
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     console.log("running minecraft...")
-    mainWindow.webContents.send(IPC_MESSAGES.SHOW_RUN_STATUS, "Minecraftを起動しています...")
 
     const serverListHandler = new ServerListHandler()
     await serverListHandler.loadServerJSON("http://twicusstumble.ddns.net/mods/twicuss1.12.2.json")
@@ -166,8 +165,8 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     if (javaPath) {
         exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
-            console.log(error)
             if (error) {
+                console.log(error)
                 dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました`})
             }
         })

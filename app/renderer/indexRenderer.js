@@ -1,23 +1,20 @@
-const playerName = document.getElementById("PlayerName")
-const runStatus = document.getElementById("RunStatus")
-const skinViewer = document.getElementById("SkinViewer")
-const serverStatus = document.getElementById("ServerStatus")
-const serverName = document.getElementById("ServerName")
-const serverIcon = document.getElementById("ServerIcon")
-const serverPlayers = document.getElementById("ServerPlayers")
-const overlay = document.getElementById("Overlay")
-const signOutButton = document.getElementById("signOut")
-const runMinecraftButton = document.getElementById("runMinecraft")
+const mainPage = document.getElementById("mainPage")
+const playerName = document.getElementById("playerName")
+const runStatus = document.getElementById("runStatus")
+const skinViewer = document.getElementById("skinViewer")
+const serverStatus = document.getElementById("serverStatus")
+const serverName = document.getElementById("serverName")
+const serverIcon = document.getElementById("serverIcon")
+const serverPlayers = document.getElementById("serverPlayers")
+const overlay = document.getElementById("overlay")
+const signOutButton = document.getElementById("signOutButton")
+const runMinecraftButton = document.getElementById("playButton")
 
 window.renderer.showPlayerName((event, userName) => {
     if (userName) {
         playerName.innerHTML = userName
         playerName.style.fontSize = "16px"
     }
-})
-
-window.renderer.showRunStatus((event, text) => {
-    overlay.style.display = "flex"
 })
 
 window.renderer.showSkinViewer((event, skinImage) => {
@@ -52,4 +49,8 @@ signOutButton.addEventListener("click", () => {
 
 runMinecraftButton.addEventListener("click", () => {
     window.renderer.sendRunMinecraftMessage()
+
+    mainPage.style.filter = "blur(3px)"
+    overlay.style.opacity = "1"
+    overlay.style.pointerEvents = "auto"
 })

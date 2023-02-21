@@ -1,4 +1,4 @@
-const background = document.getElementById("Background")
+const background = document.getElementById("background")
 
 images = []
 

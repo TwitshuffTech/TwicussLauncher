@@ -77,7 +77,7 @@ class MinecraftAuthProvider {
         return response.data.items.length // MicrosoftアカウントにMinecraftを所有していない場合、0を返す
     }
 
-    async getProfile() {
+    async getMinecraftProfile() {
         if (await this.checkGameOwnership()) {
             const config = {
                 headers: {
@@ -95,7 +95,7 @@ class MinecraftAuthProvider {
         await this.getXBLToken()
         await this.getXSTSToken()
         await this.getMinecraftToken()
-        await this.getProfile()
+        await this.getMinecraftProfile()
     }
 
     async get3DSkinImage() {

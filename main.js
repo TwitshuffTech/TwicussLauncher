@@ -1,4 +1,5 @@
-const { app, ipcMain, dialog, shell, BrowserWindow, Menu } = require("electron")
+const { app, ipcMain, dialog, BrowserWindow } = require("electron")
+const { autoUpdater } = require("electron-updater")
 const fs = require("fs")
 const path = require("path")
 const util = require("util")
@@ -13,12 +14,14 @@ const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
 
-const VERSION = "1.1.0"
+const VERSION = require("./package.json").version
 
 let microsoftAuthProvider
 let minecraftAuthProvider
 let serverStatus
 let mainWindow
+
+let useOfficialJRE = false;
 
 let createWindow = () => {
     mainWindow = new BrowserWindow({
@@ -39,9 +42,6 @@ let createWindow = () => {
     autoLogin()
 }
 
-// const menu = new Menu()
-// Menu.setApplicationMenu(menu)
-
 app.whenReady().then(() => {
     createWindow()
     checkUpdate()
@@ -61,13 +61,33 @@ app.on('activate', () => {
 
 // 起動にアプリケーション更新の有無を確認
 const checkUpdate = async () => {
-    // twicusslauncher.jsonについて
-    // {
-    //     "latset_version": "{バージョン（1.0.0など）}"
-    // }
-    const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
-    if (appVersionJSON.latest_version !== VERSION) {
-        dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
+    if (process.platform == "win32") {
+        // windowsの場合はautoUpdaterで自動更新
+        autoUpdater.checkForUpdates()
+        autoUpdater.on("update-downloaded", async (info) => {
+            const response = await dialog.showMessageBox(mainWindow, { type: "info", title: "Update available", buttons: ["再起動", "後で"], message: "アップデートが利用可能です。今すぐアプリを再起動しますか？" })
+            if (response.response === 0) {
+                autoUpdater.quitAndInstall()
+            }
+        })
+
+        autoUpdater.on("error", (error) => {
+            dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `アプリのアップデートに失敗しました\r\n${error}`})
+        })
+    } else {
+        // twicusslauncher.jsonについて
+        // {
+        //     "latset_version": "{最新のバージョン（1.0.0など）},"
+        //     "supported_versions": ["{サポートされているバージョン}", "{}", ...]
+        // }
+        const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
+        if (!appVersionJSON.supported_versions.includes(VERSION)) {
+            dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `このバージョン (v${VERSION}) は現在サポートされていません。http://twicusstumble.ddns.net/ から最新のものをダウンロードしてください。`}).then(() => {
+                app.quit()
+            })
+        } else if (appVersionJSON.latest_version !== VERSION) {
+            dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
+        }
     }
 }
 
@@ -125,7 +145,6 @@ const transiteToMain = async (token) => {
         mainWindow.webContents.send(IPC_MESSAGES.SHOW_SKIN_VIEWER, await minecraftAuthProvider.get3DSkinImage())
 
         mainWindow.webContents.send(IPC_MESSAGES.SHOW_SERVER_STATUS, await serverStatus.getServerStatus())
-        
     }
 }
 
@@ -135,9 +154,12 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
 })
 
+ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
+    useOfficialJRE = bool
+})
+
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     console.log("running minecraft...")
-    mainWindow.webContents.send(IPC_MESSAGES.SHOW_RUN_STATUS, "Minecraftを起動しています...")
 
     const serverListHandler = new ServerListHandler()
     await serverListHandler.loadServerJSON("http://twicusstumble.ddns.net/mods/twicuss1.12.2.json")
@@ -148,20 +170,23 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     let javaPath
     if (process.platform == "win32") {
-        javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe")
+        if (useOfficialJRE) {
+            javaPath = path.join(app.getPath("appData"), "../Local/Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe")
+        } else {
+            javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe")
+        }
     } else if (process.platform == "darwin") {
-        //javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java")
-        // macでコンソールから起動しようとするとjavaのruntimeエラーが出る。しょうがなくMinecraft.appを起動することで妥協
-        exec("open /Applications/Minecraft.app").then(() => {
-            app.quit()
-        })
+        if (useOfficialJRE) {
+            javaPath = path.join(app.getPath("appData"), "minecraft/runtime/jre-legacy/mac-os/jre-legacy/jre.bundle/Contents/Home/bin/java")
+        } else {
+            javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java")
+        }
     }
 
     if (javaPath) {
         exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
-            console.log(error)
             if (error) {
-                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました`})
+                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${errpr}`})
             }
         })
     }

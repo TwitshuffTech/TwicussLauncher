@@ -1,4 +1,4 @@
-const signInButton = document.getElementById("signIn")
+const signInButton = document.getElementById("signInButton")
 
 signInButton.addEventListener("click", () => {
     window.renderer.sendLoginMessage()

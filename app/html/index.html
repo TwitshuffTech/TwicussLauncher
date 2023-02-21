@@ -3,40 +3,107 @@
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../css/index.css">
+        <script src="https://kit.fontawesome.com/e9768ae93d.js" crossorigin="anonymous"></script>
         <title>Twicuss Launcher</title>
     </head>
     <body>
-        <div id="Background" class="background"></div>
+        <div id="mainPage" class="main-page">
+            <div id="background" class="background"></div>
 
-        <div class="landing">
-            <div class="upper-left">
-                <img id="ServerIcon" class="server-icon"></img>
-                <button type="button" id="signOut" class="sign-out-button">SIGN OUT</button>
+            <div id="landing" sclass="landing">
+                <div class="upper-left">
+                    <img id="serverIcon" class="server-icon"></img>
+                </div>
+
+                <div class="menu">
+                    <button type="button" id="settingsButton" class="menu-button">
+                        <i class="fa-solid fa-gear fa-xl menu-icon"></i>
+                    </button>
+                    <div class="menu-partition"></div>
+                    <button type="button" id="linkButton" class="menu-button" onclick="window.open('http://twicusstumble.ddns.net')">
+                        <i class="fa-solid fa-link fa-xl menu-icon"></i>
+                    </button>
+                    <button type="button" id="discordButton" class="menu-button" onclick="window.open('https://discord.com/channels/979354141296050197/979354141296050200')">
+                        <i class="fa-brands fa-discord fa-xl menu-icon"></i>
+                    </button>
+                    <button type="button" id="mapButton" class="menu-button" onclick="window.open('http://twicusstumble.ddns.net:8123')">
+                        <i class="fa-solid fa-location-dot fa-xl menu-icon"></i>
+                    </button>
+                </div>
+
+                <div class="user-info">
+                    <div id="playerName"></div>
+                    <div class="skin-viewer-base">
+                        <img id="skinViewer" class="skin-viewer"></img>
+                        <div id="playerName" class="player-name"></div>
+                    </div>
+                </div>
+
+                <div class="run-buttons">
+                    <div id="serverStatus", class="server-status"></div>
+                    <div id="serverName"></div>
+                    <div class="partition"></div>
+                    <button type="button" id="playButton" class="play-button">PLAY</button>
+                </div>
+
+                <div class="players">
+                    <p class="no-margin">PLAYERS</p>
+                    <div id="serverPlayers"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsPage" class="settings-page">
+            <div class="settings-overlay"></div>
+
+            <div class="settings-menu">
+                <p>Settings</p>
+                <input type="radio" id="account" name="settingsButtons" value="account" checked>
+                <label for="account">Account</label>
+                <input type="radio" id="minecraft" name="settingsButtons" value="minecraft">
+                <label for="minecraft">Minecraft</label>
+                <input type="radio" id="mods" name="settingsButtons" value="mods">
+                <label for="mods">Mods</label>
+                <input type="radio" id="java" name="settingsButtons" value="java">
+                <label for="java">Java</label>
             </div>
 
-            <div class="user-info">
-                <div id="PlayerName"></div>
-                <div class="skin-viewer-base">
-                    <img id="SkinViewer" class="skin-viewer"></img>
-                    <div id="PlayerName" class="player-name"></div>
+            <div class="settings-contents">
+                <div id="accountPage" class="setting-page account-page">
+                    <h1>Account Settings</h1>
+                    <div class="microsoft-logo">
+                        <i class="fa-brands fa-microsoft fa-lg"></i>
+                        <p class="no-margin">Microsoft</p>
+                    </div>
+                    <div class="account-info">
+                        <div id="playerNameSettings"></div>
+                        <button type="button" id="signOutButton" class="sign-out-button">SIGN OUT</button>
+                    </div>
+                </div>
+                <div id="minecraftPage" class="setting-page minecraft-page">
+                    <h1>Minecraft Settings</h1>
+                </div>
+                <div id="modsPage" class="setting-page mods-page">
+                    <h1>Mods Settings</h1>
+                </div>
+                <div id="javaPage" class="setting-page java-page">
+                    <h1>Java Settings</h1>
+                    <div class="java-setting">
+                        <p class="no-margin">Minecraft公式のJavaランタイムを使用する</p>
+                        <div class="toggle-button">
+                            <input id="useOfficialJRE" type="checkbox">
+                        </div> 
+                    </div>
                 </div>
             </div>
 
-            <div class="run-buttons">
-                <div id="ServerStatus", class="server-status"></div>
-                <div id="ServerName"></div>
-                <div class="partition"></div>
-                <button type="button" id="runMinecraft" class="play-button">PLAY</button>
-            </div>
+            <button type="button" id="closeSettingsButton" class="close-settings-button">
+                <i class="fa-solid fa-xmark fa-xl menu-icon"></i>
+            </button>
+        </div>
 
-            <div class="players">
-                <p class="no-margin">PLAYERS</p>
-                <div id="ServerPlayers"></div>
-            </div>
-
-            <div id="Overlay" class="overlay">
-                <p>LAUNCHING MINECRAFT...</p>
-            </div>
+        <div id="overlay" class="overlay">
+            <p>LAUNCHING MINECRAFT...</p>
         </div>
 
         <script src="../renderer/randomBackground.js"></script>

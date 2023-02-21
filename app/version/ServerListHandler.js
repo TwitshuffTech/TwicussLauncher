@@ -99,6 +99,7 @@ class ServerListHandler {
         await this.downloadMods()
         await this.downloadServersDat()
         await this.addLaunchProfile()
+        
         return this.versionHandler.getArgs(userName, uuid, minecraftAuthToken)
     }
 }

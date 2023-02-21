@@ -62,7 +62,18 @@ app.on('activate', () => {
 // 起動にアプリケーション更新の有無を確認
 const checkUpdate = async () => {
     if (process.platform == "win32") {
-        autoUpdater.checkForUpdatesAndNotify()
+        // windowsの場合はautoUpdaterで自動更新
+        autoUpdater.checkForUpdates()
+        autoUpdater.on("update-downloaded", async (info) => {
+            const response = await dialog.showMessageBox(mainWindow, { type: "info", title: "Update available", buttons: ["再起動", "後で"], message: "アップデートが利用可能です。今すぐアプリを再起動しますか？" })
+            if (response.response === 0) {
+                autoUpdater.quitAndInstall()
+            }
+        })
+
+        autoUpdater.on("error", (error) => {
+            dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `アプリのアップデートに失敗しました\r\n${error}`})
+        })
     } else {
         // twicusslauncher.jsonについて
         // {
@@ -175,8 +186,7 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     if (javaPath) {
         exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
             if (error) {
-                console.log(error)
-                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました`})
+                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${errpr}`})
             }
         })
     }

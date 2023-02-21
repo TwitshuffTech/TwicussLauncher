@@ -105,21 +105,17 @@ class VersionHandler {
         for (let library of this.jsonLoader.getLibraries()) {
             let address
             let url
-            let isNative = false
             
             if ("natives" in library) {
                 if (process.platform == "win32" && "windows" in library.natives) {
                     address = library.downloads.classifiers["natives-windows"].path
                     url = library.downloads.classifiers["natives-windows"].url
-                    isNative = true
                 } else if (process.platform == "darwin" && "osx" in library.natives) {
                     address = library.downloads.classifiers["natives-osx"].path
                     url = library.downloads.classifiers["natives-osx"].url
-                    isNative = true
                 } else if (process.platform == "linux" && "linux" in library.natives) {
                     address = library.downloads.classifiers["natives-linux"].path
                     url = library.downloads.classifiers["natives-linux"].url
-                    isNative = true
                 }
             }
             if (!address) {
@@ -136,10 +132,30 @@ class VersionHandler {
                     await downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address)) // urlが記載されてないのは現状ビルド前のforgeバージョン.jarだけのためとりあえずこの場合分けで
                 }                
             }
+        }
+        
+        // nativesファイルをnativeDirectoryに展開する
+        if (!fs.existsSync(path.join(nativeDirectory, "META-INF"))) {
+            for (let library of this.jsonLoader.getLibraries()) {
+                let address
+                let isNative = false
 
-            // nativesファイルだったらnativeDirectoryに展開する
-            if (isNative && !fs.existsSync(path.join(nativeDirectory, "META-INF"))) {
-                await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
+                if ("natives" in library) {
+                    if (process.platform == "win32" && "windows" in library.natives) {
+                        address = library.downloads.classifiers["natives-windows"].path
+                        isNative = true
+                    } else if (process.platform == "darwin" && "osx" in library.natives) {
+                        address = library.downloads.classifiers["natives-osx"].path
+                        isNative = true
+                    } else if (process.platform == "linux" && "linux" in library.natives) {
+                        address = library.downloads.classifiers["natives-linux"].path
+                        isNative = true
+                    }
+                }
+
+                if (isNative) {
+                    await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory })
+                }
             }
         }
     }

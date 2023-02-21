@@ -146,12 +146,10 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
 
 ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
     useOfficialJRE = bool
-    console.log(`useOfficialJRE: ${useOfficialJRE}`)
 })
 
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT_DIRECTLY, (event, bool) => {
     runMinecraftDirectly = bool
-    console.log(`runMinecraftDirectly: ${runMinecraftDirectly}`)
 })
 
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {

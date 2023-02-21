@@ -461,7 +461,7 @@ body {
 
     display: flex;
     align-items: center;
-    margin: 10px 0 10px 15px;
+    margin: 10px 0 10px 0;
 }
 
 .java-setting .toggle-button {

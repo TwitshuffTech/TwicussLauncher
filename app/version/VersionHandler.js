@@ -220,7 +220,7 @@ class VersionHandler {
                 JVM_ARGS.push(`-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump`)
             } else if (process.platform == "darwin") {
                 JVM_ARGS.push(`-Xdock:name=Minecraft`)
-                JVM_ARGS.push(`-Xdock:icon=${path.join(app.getPath("appData"), "minecraft/assets/objects/99/991b431dfd401f115241601b2b373140a8d78572").replaceAll(" ", "\\ ")}`)
+                JVM_ARGS.push(`-Xdock:icon=${path.join(app.getPath("appData"), "minecraft/assets/objects/99/991b421dfd401f115241601b2b373140a8d78572").replaceAll(" ", "\\ ")}`)
             }
 
             const MAIN_CLASS = this.jsonLoader.getMainClass()

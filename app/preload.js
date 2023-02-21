@@ -10,6 +10,12 @@ contextBridge.exposeInMainWorld("renderer", {
     sendRunMinecraftMessage: () => {
         ipcRenderer.send("RUN_MINECRAFT")
     },
+    sendIfUseOfficialJRE: (bool) => {
+        ipcRenderer.send("USE_OFFICIAL_JRE", bool)
+    },
+    sendIfRunMinecraftDirectly: (bool) => {
+        ipcRenderer.send("RUN_MINECRAFT_DIRECTLY", bool)
+    },
     showPlayerName: (func) => {
         ipcRenderer.on("SHOW_PLAYER_NAME", (event, ...args) => func(event, ...args))
     },

@@ -22,12 +22,23 @@ body {
     margin: 0px;
 }
 
-.background {
-    position: relative;
-    z-index: -2;
+.main-page {
+    position: absolute;
+    top: 0;
+    left: 0;
 
     width: 100%;
     height: 100vh;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2;
+
+    width: 100%;
+    height: 100%;
 
     background-position: center center;
     background-repeat: no-repeat;
@@ -56,7 +67,9 @@ body {
     left: 0;
 
     width: 100%;
-    height: 100vh;
+    height: 100%;
+
+    transition-property: opacity;
 }
 
 .upper-left {
@@ -76,42 +89,6 @@ body {
 
     width: 64px;
     height: 64px;
-}
-
-.sign-out-button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    outline: none;
-    padding: 0;
-    appearance: none;
-
-    position: relative;
-
-    margin: 20px;
-    
-    font-family: "Montserrat";
-    font-size: 1em;
-    color: rgba(120, 120, 120, 0.8);
-}
-
-.sign-out-button::after {
-    content: "";
-
-    position: absolute;
-    bottom: 0;
-    left: 0;
-
-    width: 100%;
-    height: 1px;
-
-    background-color: rgba(120, 120, 120, 0.8);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.sign-out-button:hover::after {
-    opacity: 1;
 }
 
 .menu {
@@ -290,8 +267,270 @@ body {
     align-items: center;
     justify-content: center;
 
+    opacity: 0;
     pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.settings-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100vh;
 
     opacity: 0;
-    transition: opacity 0.2s;
+    pointer-events: none;
+    transition-property: opacity;
+}
+
+.settings-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.settings-menu {
+    position: absolute;
+    top: 87px;
+    left: 80px;
+
+    width: 180px;
+    height: 70%;
+
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.settings-menu input {
+    display: none;
+}
+
+.settings-menu p {
+    font-size: 25px;
+    margin: 0 0 55px 0;
+}
+
+.settings-menu label {
+    color: rgb(120, 120, 120);
+    margin: 0 0 16px 10px;
+
+    cursor: pointer;
+}
+
+.settings-menu input:checked + label {
+    color: white;
+}
+
+.settings-contents {
+    position: absolute;
+    top: 87px;
+    left: 290px;
+
+    width: 60%;
+    height: 70%;
+}
+
+.settings-contents h1 {
+    position: relative;
+
+    font-size: 25px;
+    font-weight: 400;
+    margin: 0 0 55px 0;
+}
+
+.account-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    transition-property: opacity;
+}
+
+.microsoft-logo {
+    position:  relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.microsoft-logo i {
+    margin: 0 5px 0 0;
+}
+
+.account-info {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    margin: 15px 0 15px 0;
+}
+
+.account-info div {
+    position: relative;
+
+    font-size: 25px;
+    margin: 0 0 0 15px;
+}
+
+.sign-out-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: absolute;
+    right: 0;
+
+    width: 120px;
+    height: 30px;
+    
+    font-family: "Montserrat";
+    font-size: 1em;
+    color: orangered;
+
+    border-radius: 3px;
+    border: 1px solid orangered;
+
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.sign-out-button:hover {
+    color: black;
+    background-color: orangered;
+}
+
+.minecraft-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+    pointer-events: none;
+    transition-property: opacity;
+}
+
+.mods-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    
+    opacity: 0;
+    pointer-events: none;
+    transition-property: opacity;
+}
+
+.java-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+    pointer-events: none;
+    transition-property: opacity;
+}
+
+.java-setting {
+    position: relative;
+
+    width: 100%;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    margin: 10px 0 10px 15px;
+}
+
+.java-setting .toggle-button {
+    position: absolute;
+    right: 0;
+
+    width: 54px;
+    height: 26px;
+}
+
+.java-setting .toggle-button input {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+
+    border-radius: 9999px;
+    border: 1px solid white;
+
+    transition: border 0.3s;
+}
+
+.java-setting .toggle-button input:checked {
+    border: 1px solid yellowgreen;
+}
+
+.java-setting .toggle-button input::after {
+    content: "";
+
+    position: absolute;
+    top: -2px;
+    left: -2px;
+
+    width: 28px;
+    height: 28px;
+
+    box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.5);
+
+    border-radius: 50%;
+    background-color: white;
+
+    transition: left 0.3s, background-color 0.3s;
+}
+
+.java-setting .toggle-button input:checked::after {
+    left: 26px;
+    background-color: yellowgreen;
+}
+
+.close-settings-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: absolute;
+    top: 87px;
+    right: 80px;
 }

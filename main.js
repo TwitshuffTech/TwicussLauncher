@@ -21,6 +21,9 @@ let minecraftAuthProvider
 let serverStatus
 let mainWindow
 
+let useOfficialJRE = false;
+let runMinecraftDirectly = false;
+
 let createWindow = () => {
     mainWindow = new BrowserWindow({
         width: 1000,
@@ -132,7 +135,6 @@ const transiteToMain = async (token) => {
         mainWindow.webContents.send(IPC_MESSAGES.SHOW_SKIN_VIEWER, await minecraftAuthProvider.get3DSkinImage())
 
         mainWindow.webContents.send(IPC_MESSAGES.SHOW_SERVER_STATUS, await serverStatus.getServerStatus())
-        
     }
 }
 
@@ -140,6 +142,16 @@ ipcMain.on(IPC_MESSAGES.LOGOUT, async () => {
     await microsoftAuthProvider.logout()
     
     await mainWindow.loadFile(path.join(__dirname, "app/html/login.html"))
+})
+
+ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
+    useOfficialJRE = bool
+    console.log(`useOfficialJRE: ${useOfficialJRE}`)
+})
+
+ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT_DIRECTLY, (event, bool) => {
+    runMinecraftDirectly = bool
+    console.log(`runMinecraftDirectly: ${runMinecraftDirectly}`)
 })
 
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
@@ -154,21 +166,27 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
 
     let javaPath
     if (process.platform == "win32") {
-        javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe")
+        if (useOfficialJRE) {
+            javaPath = path.join(app.getPath("appData"), "../Local/Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe")
+        } else {
+            javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe")
+        }
     } else if (process.platform == "darwin") {
-        //javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java")
-        // macでコンソールから起動しようとするとjavaのruntimeエラーが出る。しょうがなくMinecraft.appを起動することで妥協
-        exec("open /Applications/Minecraft.app").then(() => {
-            app.quit()
-        })
+        if (useOfficialJRE) {
+            javaPath = path.join(app.getPath("appData"), "minecraft/runtime/jre-legacy/mac-os/jre-legacy/jre.bundle/Contents/Home/bin/java")
+        }
     }
 
-    if (javaPath) {
+    if (javaPath && (process.platform == "win32" || runMinecraftDirectly)) {
         exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
             if (error) {
                 console.log(error)
                 dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました`})
             }
+        })
+    } else {
+        exec("open /Applications/Minecraft.app").then(() => {
+            app.quit()
         })
     }
 })

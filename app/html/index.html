@@ -7,13 +7,12 @@
         <title>Twicuss Launcher</title>
     </head>
     <body>
-        <div id="mainPage">
+        <div id="mainPage" class="main-page">
             <div id="background" class="background"></div>
 
-            <div class="landing">
+            <div id="landing" sclass="landing">
                 <div class="upper-left">
                     <img id="serverIcon" class="server-icon"></img>
-                    <button type="button" id="signOutButton" class="sign-out-button">SIGN OUT</button>
                 </div>
 
                 <div class="menu">
@@ -21,13 +20,13 @@
                         <i class="fa-solid fa-gear fa-xl menu-icon"></i>
                     </button>
                     <div class="menu-partition"></div>
-                    <button type="button" id="linkButton" class="menu-button">
+                    <button type="button" id="linkButton" class="menu-button" onclick="window.open('http://twicusstumble.ddns.net')">
                         <i class="fa-solid fa-link fa-xl menu-icon"></i>
                     </button>
-                    <button type="button" id="discordButton" class="menu-button">
+                    <button type="button" id="discordButton" class="menu-button" onclick="window.open('https://discord.com/channels/979354141296050197/979354141296050200')">
                         <i class="fa-brands fa-discord fa-xl menu-icon"></i>
                     </button>
-                    <button type="button" id="mapButton" class="menu-button">
+                    <button type="button" id="mapButton" class="menu-button" onclick="window.open('http://twicusstumble.ddns.net:8123')">
                         <i class="fa-solid fa-location-dot fa-xl menu-icon"></i>
                     </button>
                 </div>
@@ -52,6 +51,61 @@
                     <div id="serverPlayers"></div>
                 </div>
             </div>
+        </div>
+
+        <div id="settingsPage" class="settings-page">
+            <div class="settings-overlay"></div>
+
+            <div class="settings-menu">
+                <p>Settings</p>
+                <input type="radio" id="account" name="settingsButtons" value="account" checked>
+                <label for="account">Account</label>
+                <input type="radio" id="minecraft" name="settingsButtons" value="minecraft">
+                <label for="minecraft">Minecraft</label>
+                <input type="radio" id="mods" name="settingsButtons" value="mods">
+                <label for="mods">Mods</label>
+                <input type="radio" id="java" name="settingsButtons" value="java">
+                <label for="java">Java</label>
+            </div>
+
+            <div class="settings-contents">
+                <div id="accountPage" class="setting-page account-page">
+                    <h1>Account Settings</h1>
+                    <div class="microsoft-logo">
+                        <i class="fa-brands fa-microsoft fa-lg"></i>
+                        <p class="no-margin">Microsoft</p>
+                    </div>
+                    <div class="account-info">
+                        <div id="playerNameSettings"></div>
+                        <button type="button" id="signOutButton" class="sign-out-button">SIGN OUT</button>
+                    </div>
+                </div>
+                <div id="minecraftPage" class="setting-page minecraft-page">
+                    <h1>Minecraft Settings</h1>
+                </div>
+                <div id="modsPage" class="setting-page mods-page">
+                    <h1>Mods Settings</h1>
+                </div>
+                <div id="javaPage" class="setting-page java-page">
+                    <h1>Java Settings</h1>
+                    <div class="java-setting">
+                        <p class="no-margin">Minecraft公式のJavaランタイムを使用する</p>
+                        <div class="toggle-button">
+                            <input id="useOfficialJRE" type="checkbox">
+                        </div> 
+                    </div>
+                    <div class="java-setting">
+                        <p class="no-margin">Minecraftを直接起動する（Macのみ）</p>
+                        <div class="toggle-button">
+                            <input id="runMinecraftDirectly" type="checkbox">
+                        </div> 
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="closeSettingsButton" class="close-settings-button">
+                <i class="fa-solid fa-xmark fa-xl menu-icon"></i>
+            </button>
         </div>
 
         <div id="overlay" class="overlay">

@@ -25,11 +25,11 @@ const useOfficialJRE = document.getElementById("useOfficialJRE")
 const runMinecraftDirectly = document.getElementById("runMinecraftDirectly")
 
 window.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem("useOfficialJRE")) {
+    if (JSON.parse(localStorage.getItem("useOfficialJRE"))) {
         useOfficialJRE.checked = JSON.parse(localStorage.getItem("useOfficialJRE"))
         window.renderer.sendIfUseOfficialJRE(true)
     }
-    if (localStorage.getItem("runMinecraftDirectly")) {
+    if (JSON.parse(localStorage.getItem("runMinecraftDirectly"))) {
         runMinecraftDirectly.checked = JSON.parse(localStorage.getItem("runMinecraftDirectly"))
         window.renderer.sendIfRunMinecraftDirectly(true)
     }

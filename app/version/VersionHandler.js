@@ -210,7 +210,7 @@ class VersionHandler {
             const JVM_ARGS = [
                 `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
-                `-Dminercaft.launcher.version=${"1.0"}`,
+                `-Dminercaft.launcher.version=${"1.1"}`,
                 `-Dminecraft.client.jar=${this.clientPath.replaceAll(" ", "\\ ")}`,
                 `-cp ${((process.platform == "win32") ? libraries.join(';') : libraries.join(':')).replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,
@@ -244,7 +244,7 @@ class VersionHandler {
             const JVM_ARGS = [
                 `-Djava.library.path=${this.nativeDirectory.replaceAll(" ", "\\ ")}`,
                 `-Dminecraft.launcher.brand=${"TwicussLauncher"}`,
-                `-Dminercaft.launcher.version=${"1.0"}`,
+                `-Dminercaft.launcher.version=${"1.1"}`,
                 `-Dminecraft.client.jar=${this.clientPath.replaceAll(" ", "\\ ")}`,
                 `-cp ${((process.platform == "win32") ? libraries.join(';') : libraries.join(':')).replaceAll(" ", "\\ ")}`,
                 `-Xss1M`,

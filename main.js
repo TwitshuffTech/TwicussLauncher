@@ -22,7 +22,6 @@ let serverStatus
 let mainWindow
 
 let useOfficialJRE = false;
-let runMinecraftDirectly = false;
 
 let createWindow = () => {
     mainWindow = new BrowserWindow({
@@ -148,10 +147,6 @@ ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
     useOfficialJRE = bool
 })
 
-ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT_DIRECTLY, (event, bool) => {
-    runMinecraftDirectly = bool
-})
-
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     console.log("running minecraft...")
 
@@ -172,19 +167,17 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     } else if (process.platform == "darwin") {
         if (useOfficialJRE) {
             javaPath = path.join(app.getPath("appData"), "minecraft/runtime/jre-legacy/mac-os/jre-legacy/jre.bundle/Contents/Home/bin/java")
+        } else {
+            javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java")
         }
     }
 
-    if (javaPath && (process.platform == "win32" || runMinecraftDirectly)) {
+    if (javaPath) {
         exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
             if (error) {
                 console.log(error)
                 dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました`})
             }
-        })
-    } else {
-        exec("open /Applications/Minecraft.app").then(() => {
-            app.quit()
         })
     }
 })

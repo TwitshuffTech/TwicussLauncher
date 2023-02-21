@@ -29,10 +29,6 @@ window.addEventListener("DOMContentLoaded", () => {
         useOfficialJRE.checked = JSON.parse(localStorage.getItem("useOfficialJRE"))
         window.renderer.sendIfUseOfficialJRE(true)
     }
-    if (JSON.parse(localStorage.getItem("runMinecraftDirectly"))) {
-        runMinecraftDirectly.checked = JSON.parse(localStorage.getItem("runMinecraftDirectly"))
-        window.renderer.sendIfRunMinecraftDirectly(true)
-    }
 })
 
 window.renderer.showPlayerName((event, userName) => {
@@ -119,29 +115,9 @@ closeSettingsButton.addEventListener("click", () => {
 useOfficialJRE.addEventListener("change", () => {
     if (useOfficialJRE.checked) {
         window.renderer.sendIfUseOfficialJRE(true)
-
         localStorage.setItem("useOfficialJRE", JSON.stringify(useOfficialJRE.checked))
     } else {
-        runMinecraftDirectly.checked = false;
-        window.renderer.sendIfRunMinecraftDirectly(false)
         window.renderer.sendIfUseOfficialJRE(false)
-
-        localStorage.setItem("runMinecraftDirectly", JSON.stringify(runMinecraftDirectly.checked))
-        localStorage.setItem("useOfficialJRE", JSON.stringify(useOfficialJRE.checked))
-    }
-})
-
-runMinecraftDirectly.addEventListener("change", () => {
-    if (runMinecraftDirectly.checked) {
-        useOfficialJRE.checked = true;
-        window.renderer.sendIfUseOfficialJRE(true)
-        window.renderer.sendIfRunMinecraftDirectly(true)
-
-        localStorage.setItem("useOfficialJRE", JSON.stringify(useOfficialJRE.checked))
-        localStorage.setItem("runMinecraftDirectly", JSON.stringify(runMinecraftDirectly.checked))
-    } else {
-        window.renderer.sendIfRunMinecraftDirectly(false)
-
         localStorage.setItem("useOfficialJRE", JSON.stringify(useOfficialJRE.checked))
     }
 })

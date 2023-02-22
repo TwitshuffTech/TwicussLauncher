@@ -86,7 +86,9 @@ const checkUpdate = async () => {
                 app.quit()
             })
         } else if (appVersionJSON.latest_version !== VERSION) {
-            dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
+            dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`}).then(() => {
+                shell.openExternal("https://github.com/TwitshuffTech/TwicussLauncher/releases")
+            })
         }
     }
 }

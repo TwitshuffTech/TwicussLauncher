@@ -46,5 +46,58 @@ body {
     width: 100%;
     height: 100%;
 
-    box-shadow: inset 0 0 300px 0 rgba(0, 0, 0, 0.5), inset 0 0 100px 0 rgba(0, 0, 0, 0.9)
+    box-shadow: inset 0 0 300px 0 rgba(0, 0, 0, 0.5), inset 0 0 100px 0 rgba(0, 0, 0, 0.9);
+}
+
+p span {
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}
+
+p span:nth-of-type(1) {
+    animation-name: dot_1;
+}
+
+p span:nth-of-type(2) {
+    animation-name: dot_2;
+}
+
+p span:nth-of-type(3) {
+    animation-name: dot_3;
+}
+
+@keyframes dot_1 {
+    0% {
+        visibility: hidden;
+    }
+    24% {
+        visibility: hidden;
+    }
+    25% {
+        visibility: visible;
+    }
+}
+
+@keyframes dot_2 {
+    0% {
+        visibility: hidden;
+    }
+    49% {
+        visibility: hidden;
+    }
+    50% {
+        visibility: visible;
+    }
+}
+
+@keyframes dot_3 {
+    0% {
+        visibility: hidden;
+    }
+    74% {
+        visibility: hidden;
+    }
+    75% {
+        visibility: visible;
+    }
 }

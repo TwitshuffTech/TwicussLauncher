@@ -13,6 +13,7 @@ const ServerStatus = require("./app/ServerStatus.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
+const { resolve } = require("path")
 
 const VERSION = require("./package.json").version
 
@@ -133,7 +134,7 @@ ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
 
 const transiteToMain = async (token) => {
     mainWindow.loadFile(path.join(__dirname, "app/html/loginTransition.html"))
-
+    
     minecraftAuthProvider = new MinecraftAuthProvider()
     await minecraftAuthProvider.authMinecraft(token)
 
@@ -192,5 +193,8 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
                 dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${errpr}`})
             }
         })
+        setTimeout(() => {
+            app.quit()
+        }, 5000)
     }
 })

@@ -83,6 +83,7 @@ const checkUpdate = async () => {
         const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
         if (!appVersionJSON.supported_versions.includes(VERSION)) {
             dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `このバージョン (v${VERSION}) は現在サポートされていません。http://twicusstumble.ddns.net/ から最新のものをダウンロードしてください。`}).then(() => {
+                shell.openExternal("https://github.com/TwitshuffTech/TwicussLauncher/releases")
                 app.quit()
             })
         } else if (appVersionJSON.latest_version !== VERSION) {

@@ -13,6 +13,7 @@ const ServerStatus = require("./app/ServerStatus.js")
 const { IPC_MESSAGES } = require("./app/constants")
 const { msalConfig } = require("./app/authConfig.js")
 const downloader = require("./app/downloader.js")
+const { resolve } = require("path")
 
 const VERSION = require("./package.json").version
 
@@ -83,10 +84,13 @@ const checkUpdate = async () => {
         const appVersionJSON = await downloader.downloadJSON("http://twicusstumble.ddns.net/download/twicusslauncher.json")
         if (!appVersionJSON.supported_versions.includes(VERSION)) {
             dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `このバージョン (v${VERSION}) は現在サポートされていません。http://twicusstumble.ddns.net/ から最新のものをダウンロードしてください。`}).then(() => {
+                shell.openExternal("https://github.com/TwitshuffTech/TwicussLauncher/releases")
                 app.quit()
             })
         } else if (appVersionJSON.latest_version !== VERSION) {
-            dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`})
+            dialog.showMessageBox(mainWindow, { title: "Update info", message: `アップデートが利用可能です。http://twicusstumble.ddns.net/ からダウンロードしてください。(v${VERSION} -> v${appVersionJSON.latest_version})`}).then(() => {
+                shell.openExternal("https://github.com/TwitshuffTech/TwicussLauncher/releases")
+            })
         }
     }
 }
@@ -130,7 +134,7 @@ ipcMain.on(IPC_MESSAGES.LOGIN, async () => {
 
 const transiteToMain = async (token) => {
     mainWindow.loadFile(path.join(__dirname, "app/html/loginTransition.html"))
-
+    
     minecraftAuthProvider = new MinecraftAuthProvider()
     await minecraftAuthProvider.authMinecraft(token)
 
@@ -186,8 +190,11 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     if (javaPath) {
         exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
             if (error) {
-                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${errpr}`})
+                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${error}`})
             }
         })
+        setTimeout(() => {
+            app.quit()
+        }, 5000)
     }
 })

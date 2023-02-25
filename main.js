@@ -193,8 +193,5 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
                 dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${error}`})
             }
         })
-        setTimeout(() => {
-            app.quit()
-        }, 5000)
     }
 })

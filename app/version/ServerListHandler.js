@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 const VersionHandler = require("./VersionHandler.js")
-const downloader = require("../downloader.js");
+const Downloader = require("../Downloader.js");
 
 const GAME_DIRECTORY = (process.platform === "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft");
 const LAUNCHER_DIRECTORY = path.join(app.getPath("appData"), ".twicusslauncher/minecraft");
@@ -38,7 +38,7 @@ class ServerListHandler {
         //     ],
         //     "icon": "{server_profilesに加える画像データ（Base64 encoded）}"
         // }
-        this.serverJSON = await downloader.downloadJSON(url);
+        this.serverJSON = await Downloader.downloadJSON(url);
         this.createVersionHandler();
     }
 
@@ -59,14 +59,14 @@ class ServerListHandler {
         for (let mod of this.serverJSON.mods) {
             if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/mods/" + mod.name))) {
                 console.log(`Downloading ${mod.name} from ${mod.url} ...`);
-                await downloader.downloadAndSave(mod.url, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/mods/" + mod.name));
+                await Downloader.downloadAndSave(mod.url, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/mods/" + mod.name));
             }
         }
     }
 
     downloadServersDat() {
         if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"))) {
-            downloader.downloadAndSave(this.serverJSON.servers_dat, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"));
+            Downloader.downloadAndSave(this.serverJSON.servers_dat, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"));
         }
     }
 

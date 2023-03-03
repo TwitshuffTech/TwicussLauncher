@@ -5,7 +5,7 @@ const axios = require("axios")
 const unzip = require("extract-zip")
 const tar = require("tar")
 
-const downloader = require("../downloader.js")
+const Downloader = require("../Downloader.js")
 
 const JSONLoader = require("./JSONLoader")
 const ForgeJSONLoader = require("./ForgeJSONLoader");
@@ -50,8 +50,8 @@ class VersionHandler {
         }
         
         if (!this.versionExists()) {
-            await downloader.downloadAndSave(this.serverInfo["jsonURL"], this.jsonPath);
-            await downloader.downloadAndSave(this.serverInfo["clientURL"], this.clientPath);
+            await Downloader.downloadAndSave(this.serverInfo["jsonURL"], this.jsonPath);
+            await Downloader.downloadAndSave(this.serverInfo["clientURL"], this.clientPath);
         }
 
         if (this.serverInfo["type"] === "forge") {
@@ -71,13 +71,13 @@ class VersionHandler {
                 let url;
                 if (process.platform === "win32") {
                     url = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_x64_windows_hotspot_8u362b09.zip";
-                    await downloader.downloadAndSave(url, path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()));
+                    await Downloader.downloadAndSave(url, path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()));
 
                     fs.mkdirSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent), { recursive: true });
                     await unzip(path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()), { dir: path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent) });
                 } else if (process.platform === "darwin") {
                     url = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_x64_mac_hotspot_8u362b09.tar.gz";
-                    await downloader.downloadAndSave(url, path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()));
+                    await Downloader.downloadAndSave(url, path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()));
 
                     fs.mkdirSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent), { recursive: true });
                     await tar.extract({ file: path.join(LAUNCHER_DIRECTORY, "runtime/" + url.split('/').pop()), cwd: path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent) });
@@ -116,9 +116,9 @@ class VersionHandler {
 
             if (!fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
                 if (url) {
-                    await downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address));
+                    await Downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address));
                 } else {
-                    await downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address)); // urlが記載されてないのは現状ビルド前のforgeバージョン.jarだけのためとりあえずこの場合分けで
+                    await Downloader.downloadAndSave(this.serverInfo["preClientURL"], path.join(GAME_DIRECTORY, "libraries/" + address)); // urlが記載されてないのは現状ビルド前のforgeバージョン.jarだけのためとりあえずこの場合分けで
                 }                
             }
         }
@@ -154,12 +154,12 @@ class VersionHandler {
             this.vanilaVersionHandler.downloadAssets();
         } else {
             if (!fs.existsSync(path.join(GAME_DIRECTORY, `assets/indexes/${this.jsonLoader.getAssetIndex().id}.json`))) {
-                downloader.downloadAndSave(this.jsonLoader.getAssetIndex().url, path.join(GAME_DIRECTORY, `assets/indexes/${this.jsonLoader.getAssetIndex().id}.json`));
-                const assetsJSON = await downloader.downloadJSON(this.jsonLoader.getAssetIndex().url);
+                Downloader.downloadAndSave(this.jsonLoader.getAssetIndex().url, path.join(GAME_DIRECTORY, `assets/indexes/${this.jsonLoader.getAssetIndex().id}.json`));
+                const assetsJSON = await Downloader.downloadJSON(this.jsonLoader.getAssetIndex().url);
 
                 for (let name in assetsJSON.objects) {
                     const hashPath = assetsJSON.objects[name].hash.slice(0, 2) + "/" + assetsJSON.objects[name].hash;
-                    await downloader.downloadAndSave(`https://resources.download.minecraft.net/${hashPath}`, path.join(GAME_DIRECTORY, `assets/objects/${hashPath}`));
+                    await Downloader.downloadAndSave(`https://resources.download.minecraft.net/${hashPath}`, path.join(GAME_DIRECTORY, `assets/objects/${hashPath}`));
                 }
             }
         }

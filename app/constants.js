@@ -6,8 +6,8 @@ const IPC_MESSAGES = {
     LOGIN: "LOGIN",
     LOGOUT: "LOGOUT",
     RUN_MINECRAFT: "RUN_MINECRAFT"
-}
+};
 
 module.exports = {
     IPC_MESSAGES: IPC_MESSAGES
-}
+};

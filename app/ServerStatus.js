@@ -1,50 +1,46 @@
-const axios = require("axios")
-const { update } = require("tar")
+const axios = require("axios");
+const { update } = require("tar");
 
 class ServerStatus {
-    serverData
-
-    constructor() {
-
-    }
+    constructor() {}
 
     async updateServerData() {
-        const response = await axios.get("https://mcapi.us/server/status?ip=twicusstumble.ddns.net")
-        this.serverData = JSON.parse(JSON.stringify(response.data))
+        const response = await axios.get("https://mcapi.us/server/status?ip=twicusstumble.ddns.net");
+        this.serverData = JSON.parse(JSON.stringify(response.data));
     }
 
     isActive() {
-        if (this.serverData.status == "success") {
-            return true
+        if (this.serverData.status === "success") {
+            return true;
         } else {
-            return false
+            return false;
         }
     }
 
     getServerName() {
-        return this.serverData.motd
+        return this.serverData.motd;
     }
 
     getIcon() {
-        return this.serverData.favicon
+        return this.serverData.favicon;
     }
 
     getNumberOfPlayers() {
         return {
             max: this.serverData.players.max,
             now: this.serverData.players.now
-        }
+        };
     }
 
     async getServerStatus() {
-        await this.updateServerData()
+        await this.updateServerData();
         return {
             isActive: this.isActive(),
             name: this.getServerName(),
             icon: this.getIcon(),
             players: this.getNumberOfPlayers()
-        }
+        };
     }
 }
 
-module.exports = ServerStatus
+module.exports = ServerStatus;

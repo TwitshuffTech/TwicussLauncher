@@ -26,7 +26,6 @@ class MinecraftLauncher {
 
         await this.versionManager.donwloadFiles();
         await this.modManager.downloadMods(this.serverListHandler.getModList());
-        await this.modManager.getInstalledMods();
     }
 
     async launchGame(userName, uuid, minecraftAuthToken, useOfficialJRE) {

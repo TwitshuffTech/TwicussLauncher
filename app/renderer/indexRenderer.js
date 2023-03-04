@@ -16,10 +16,12 @@ const runMinecraftButton = document.getElementById("playButton");
 const settingsButton = document.getElementById("settingsButton");
 
 const settingsButtons = document.getElementsByName("settingsButtons");
+const modsSettingsButton = document.getElementById("mods");
 const settingPages = document.getElementsByClassName("setting-page");
 const closeSettingsButton = document.getElementById("closeSettingsButton");
 
 const playerNameSettings = document.getElementById("playerNameSettings");
+const modList = document.getElementById("modList");
 
 const useOfficialJRE = document.getElementById("useOfficialJRE");
 const runMinecraftDirectly = document.getElementById("runMinecraftDirectly");
@@ -66,6 +68,13 @@ window.renderer.showServerStatus((event, status) => {
     }
 });
 
+window.renderer.showInstalledMods((event, mods) => {
+    console.log(mods);
+    for (let mod of mods) {
+        modList.innerHTML += `<div id=mod>${mod}</div>`;
+    }
+})
+
 signOutButton.addEventListener("click", () => {
     window.renderer.sendSignoutMessage();
 });
@@ -101,6 +110,10 @@ for (let i = 0; i < settingsButtons.length; i++) {
         page.style.opacity = "1";
     });
 }
+
+modsSettingsButton.addEventListener("click", () => {
+    window.renderer.sendReloadingMods();
+})
 
 closeSettingsButton.addEventListener("click", () => {
     settingsPage.style.transitionDuration = "0";

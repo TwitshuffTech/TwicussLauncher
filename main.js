@@ -7,10 +7,14 @@ const Downloader = require("./app/util/Downloader.js");
 const AccountHandler = require("./app/account/AccountHandler.js");
 const MinecraftLauncher = require("./app/minecraft/MinecraftLauncher.js");
 const Server = require("./app/minecraft/EnumServer.js");
+const ModManager = require("./app/minecraft/ModManager");
 
 const VERSION = require("./package.json").version;
 
+let modManager = new ModManager()
 let accountHandler;
+
+let server = Server["1.12.2forge"];
 
 let mainWindow;
 
@@ -99,8 +103,18 @@ ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
     useOfficialJRE = bool;
 });
 
+ipcMain.on(IPC_MESSAGES.RELOAD_MODS, async () => {
+    modManager.setGameDirectory(path.join(DIRECTORIES.LAUNCHER, server));
+    mainWindow.webContents.send(IPC_MESSAGES.SHOW_INSTALLED_MODS, await modManager.getInstalledMods());
+});
+
+ipcMain.on(IPC_MESSAGES.DELETE_MOD, async(event, mod) => {
+    await modManager.removeMod(mod)
+    mainWindow.webContents.send(IPC_MESSAGES.SHOW_INSTALLED_MODS, await modManager.getInstalledMods());
+});
+
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
-    let minecraftLauncher = new MinecraftLauncher(Server["1.12.2forge"]);
+    let minecraftLauncher = new MinecraftLauncher(server);
 
     await minecraftLauncher.setup();
     let result = await minecraftLauncher.launchGame(accountHandler.getUserName(), accountHandler.getUUID(), accountHandler.getMinecraftAuthToken(), useOfficialJRE);

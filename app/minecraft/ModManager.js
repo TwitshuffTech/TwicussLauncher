@@ -9,11 +9,15 @@ class ModManager {
         this.gameDirectory = gameDirectory;
     }
 
+    setGameDirectory(gameDirectory) {
+        this.gameDirectory = gameDirectory;
+    }
+
     async downloadMods(modList) {
         for (let mod of modList) {
             if (!fs.existsSync(path.join(this.gameDirectory, "mods/" + mod.name))) {
                 console.log(`Downloading ${mod.name} from ${mod.url}...`);
-                await Downloader.downloadAndSave(mod.url, path.join(this.gameDirectory, "mods" + mod.name));
+                await Downloader.downloadAndSave(mod.url, path.join(this.gameDirectory, "mods/" + mod.name));
             }
         }
     }

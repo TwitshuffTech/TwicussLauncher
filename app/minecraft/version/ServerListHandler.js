@@ -2,16 +2,18 @@ const { app } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
-const VersionHandler = require("./VersionHandler.js")
-const Downloader = require("../Downloader.js");
+const Downloader = require("../../Downloader.js");
+const Server = require("../EnumServer.js");
 
 const GAME_DIRECTORY = (process.platform === "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft");
 const LAUNCHER_DIRECTORY = path.join(app.getPath("appData"), ".twicusslauncher/minecraft");
 
 class ServerListHandler {
-    constructor() {}
+    constructor(server) {
+        this.server = server;
+    }
 
-    async loadServerJSON(url) {
+    async loadServerJSON() {
         // server.jsonについて
         // {
         //     "type": "minecraft" or "forge",
@@ -38,64 +40,56 @@ class ServerListHandler {
         //     ],
         //     "icon": "{server_profilesに加える画像データ（Base64 encoded）}"
         // }
-        this.serverJSON = await Downloader.downloadJSON(url);
-        this.createVersionHandler();
-    }
-
-    createVersionHandler() {
-        const serverInfo = {
-            "type": this.serverJSON.type,
-            "version": this.serverJSON.version,
-            "jsonURL": this.serverJSON.jsonURL,
-            "clientURL": this.serverJSON.clientURL,
-            "preClientURL": this.serverJSON.preClientURL,
-            "vanila": this.serverJSON.vanila,
-        };
-        this.versionHandler = new VersionHandler(serverInfo);
-    }
-
-
-    async downloadMods() {
-        for (let mod of this.serverJSON.mods) {
-            if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/mods/" + mod.name))) {
-                console.log(`Downloading ${mod.name} from ${mod.url} ...`);
-                await Downloader.downloadAndSave(mod.url, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/mods/" + mod.name));
-            }
+        let jsonUrl;
+        switch (this.server) {
+            case Server["1.12.2forge"]:
+                jsonUrl = "http://twicusstumble.ddns.net/mods/twicuss1.12.2.json"
+                break;
         }
+        this.serverJSON = await Downloader.downloadJSON(jsonUrl);
+
+        return this.serverJSON;
     }
 
-    downloadServersDat() {
-        if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"))) {
-            Downloader.downloadAndSave(this.serverJSON.servers_dat, path.join(LAUNCHER_DIRECTORY, this.serverJSON.version + "/servers.dat"));
+    downloadServersDat(gameDirectory) {
+        if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, gameDirectory + "/servers.dat"))) {
+            Downloader.downloadAndSave(this.getServersDat(), path.join(LAUNCHER_DIRECTORY, gameDirectory + "/servers.dat"));
         }
     }
 
     addLaunchProfile() {
         const propertiesJSON = JSON.parse(fs.readFileSync(path.join(GAME_DIRECTORY, "launcher_profiles.json")));
-        const profileName = this.serverJSON.name;
+        const profileName = this.getName();
         if (!(profileName in Object.keys(propertiesJSON.profiles))) {
             propertiesJSON.profiles[`${profileName}`] = {
                 "name": profileName,
                 "type": "custom",
-                "lastVersionId": this.serverJSON.version,
-                "gameDir": path.join(LAUNCHER_DIRECTORY, this.serverJSON.version),
-                "icon": this.serverJSON.icon
+                "lastVersionId": this.getVersion(),
+                "gameDir": path.join(LAUNCHER_DIRECTORY, this.getVersion()),
+                "icon": this.getIcon()
             };
             fs.writeFileSync(path.join(GAME_DIRECTORY, "launcher_profiles.json"), JSON.stringify(propertiesJSON));
         }
     }
 
-    // Minecraftの実行時引数を返すことに注意
-    async prepareToRunMinecraft(userName, uuid, minecraftAuthToken) {
-        await this.versionHandler.downloadFile();
-        await this.versionHandler.downloadJava();
-        await this.versionHandler.downloadLibraries(this.versionHandler.nativeDirectory);
-        await this.versionHandler.downloadAssets();
-        await this.downloadMods();
-        await this.downloadServersDat();
-        await this.addLaunchProfile();
-        
-        return this.versionHandler.getArgs(userName, uuid, minecraftAuthToken);
+    getName() {
+        return this.serverJSON.name;
+    }
+
+    getVersion() {
+        return this.serverJSON.version;
+    }
+
+    getServersDat() {
+        return this.serverJSON.servers_dat;
+    }
+
+    getModList() {
+        return this.serverJSON.mods;
+    }
+
+    getIcon() {
+        return this.serverJSON.icon;
     }
 }
 

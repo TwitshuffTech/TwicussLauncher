@@ -1,17 +1,12 @@
 const { app, ipcMain, dialog, BrowserWindow } = require("electron");
 const { autoUpdater } = require("electron-updater");
-const fs = require("fs");
 const path = require("path");
-const util = require("util");
-const childProcess = require("child_process");
-const axios = require("axios");
 
 const { IPC_MESSAGES } = require("./app/constants");
 const Downloader = require("./app/Downloader.js");
 const AccountHandler = require("./app/account/AccountHandler.js");
-const ServerListHandler = require("./app/version/ServerListHandler.js");
-
-require("./app/account/AccountHandler.js");
+const MinecraftLauncher = require("./app/minecraft/MinecraftLauncher.js");
+const Server = require("./app/minecraft/EnumServer.js");
 
 const VERSION = require("./package.json").version;
 
@@ -39,7 +34,7 @@ let createWindow = () => {
 app.whenReady().then(() => {
     createWindow();
 
-    accountHander = new AccountHandler(mainWindow);
+    accountHandler = new AccountHandler(mainWindow);
     accountHandler.autoLogin();
 
     checkUpdate();
@@ -105,35 +100,11 @@ ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
 });
 
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
-    console.log("running minecraft...");
+    let minecraftLauncher = new MinecraftLauncher(Server["1.12.2forge"]);
 
-    const serverListHandler = new ServerListHandler();
-    await serverListHandler.loadServerJSON("http://twicusstumble.ddns.net/mods/twicuss1.12.2.json");
-
-    const args = await serverListHandler.prepareToRunMinecraft(accountHandler.getUserName(), accountHandler.getUUID(), accountHandler.getMinecraftAuthToken());
-    
-    const exec = util.promisify(childProcess.exec);
-
-    let javaPath;
-    if (process.platform == "win32") {
-        if (useOfficialJRE) {
-            javaPath = path.join(app.getPath("appData"), "../Local/Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe");
-        } else {
-            javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe");
-        }
-    } else if (process.platform == "darwin") {
-        if (useOfficialJRE) {
-            javaPath = path.join(app.getPath("appData"), "minecraft/runtime/jre-legacy/mac-os/jre-legacy/jre.bundle/Contents/Home/bin/java");
-        } else {
-            javaPath = path.join(app.getPath("appData"), ".twicusslauncher/minecraft/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java");
-        }
-    }
-
-    if (javaPath) {
-        exec(`${javaPath.replaceAll(" ", "\\ ")} ${args}`, (error, stdout, stderror) => {
-            if (error) {
-                dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${error}`});
-            }
-        });
+    await minecraftLauncher.setup();
+    let result = await minecraftLauncher.launchGame(accountHandler.getUserName(), accountHandler.getUUID(), accountHandler.getMinecraftAuthToken(), useOfficialJRE);
+    if (result != null) {
+        dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${result}`});
     }
 })

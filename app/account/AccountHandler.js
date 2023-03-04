@@ -1,4 +1,4 @@
-const { ipcMain, BrowserWindow } = require("electron");
+const { BrowserWindow } = require("electron");
 const path = require("path");
 
 const { msalConfig } = require("./authConfig.js");
@@ -6,6 +6,7 @@ const { IPC_MESSAGES } = require("../constants.js");
 
 const MicrosoftAuthProvider = require("./MicrosoftAuthProvider");
 const MinecraftAuthProvider = require("./MinecraftAuthProvider");
+const ServerStatus = require("../ServerStatus.js");
 
 const microsoftAuthProvider = new MicrosoftAuthProvider(msalConfig);
 const minecraftAuthProvider = new MinecraftAuthProvider();
@@ -53,7 +54,7 @@ class AccountHandler {
     }
 
     async transiteToMain(token) {
-        this.mainWindow.loadFile(path.join(__dirname, "app/html/loginTransition.html"));
+        this.mainWindow.loadFile(path.join(__dirname, "../html/loginTransition.html"));
         
         await minecraftAuthProvider.authMinecraft(token);
     
@@ -62,7 +63,7 @@ class AccountHandler {
 
             await this.logout();
         } else {
-            await this.mainWindow.loadFile(path.join(__dirname, "app/html/index.html"));
+            await this.mainWindow.loadFile(path.join(__dirname, "../html/index.html"));
     
             this.mainWindow.webContents.send(IPC_MESSAGES.SHOW_PLAYER_NAME, minecraftAuthProvider.userName);
             this.mainWindow.webContents.send(IPC_MESSAGES.SHOW_SKIN_VIEWER, await minecraftAuthProvider.get3DSkinImage());
@@ -73,7 +74,7 @@ class AccountHandler {
 
     async logout() {
         await microsoftAuthProvider.logout();
-        this.mainWindow.loadFile(path.join(__dirname, "app/html/login.html"));
+        this.mainWindow.loadFile(path.join(__dirname, "../html/login.html"));
     }
 
     getUserName() {

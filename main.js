@@ -2,8 +2,8 @@ const { app, ipcMain, dialog, BrowserWindow } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 
-const { IPC_MESSAGES } = require("./app/constants");
-const Downloader = require("./app/Downloader.js");
+const { IPC_MESSAGES, DIRECTORIES } = require("./app/util/constants");
+const Downloader = require("./app/util/Downloader.js");
 const AccountHandler = require("./app/account/AccountHandler.js");
 const MinecraftLauncher = require("./app/minecraft/MinecraftLauncher.js");
 const Server = require("./app/minecraft/EnumServer.js");

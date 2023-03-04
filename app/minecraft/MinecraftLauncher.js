@@ -3,29 +3,30 @@ const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
 
-const ServerListHandler = require("./version/ServerListHandler.js");
+const ServerListHandler = require("./ServerListHandler.js");
 const VersionManager = require("./version/VersionManager");
 const ModManager = require("./ModManager");
 
-GAME_DIRECTORY = (process.platform === "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft");
+const { DIRECTORIES } = require("../util/constants.js");
 
 class MinecraftLauncher {
     constructor(server) {
         this.server = server;
-        this.gameDirectory = server;
+        this.gameDirectory = path.join(DIRECTORIES.LAUNCHER, this.server);
         this.serverListHandler = new ServerListHandler(this.server);
     }
 
     async setup() {
         let serverJSON = await this.serverListHandler.loadServerJSON();
         this.versionManager = new VersionManager(serverJSON);
-        this.modManager = new ModManager();
+        this.modManager = new ModManager(this.gameDirectory);
 
         await this.serverListHandler.downloadServersDat(this.gameDirectory);
         await this.serverListHandler.addLaunchProfile();
 
         await this.versionManager.donwloadFiles();
-        await this.modManager.downloadMods(this.serverListHandler.getModList(), this.gameDirectory);
+        await this.modManager.downloadMods(this.serverListHandler.getModList());
+        await this.modManager.getInstalledMods();
     }
 
     async launchGame(userName, uuid, minecraftAuthToken, useOfficialJRE) {
@@ -45,7 +46,7 @@ class MinecraftLauncher {
         }
     }
 
-    getArgs(directory, userName, uuid, minecraftAuthToken) {
+    getArgs(gameDirectory, userName, uuid, minecraftAuthToken) {
         let libraries;
         if (this.versionManager.isForge()) {
             libraries = this.versionManager.getLibraryPaths(this.versionManager.getJSONLoader().getLibraries().concat(this.versionManager.vanilaVersionManager.getJSONLoader().getLibraries()));
@@ -78,8 +79,8 @@ class MinecraftLauncher {
         let gameArgs = [
             `--username ${userName}`,
             `--version ${this.versionManager.jsonLoader.getId()}`,
-            `--gameDir ${path.join(app.getPath("appData"), `.twicusslauncher/minecraft/${directory}`).replaceAll(" ", "\\ ")}`,
-            `--assetsDir ${path.join(GAME_DIRECTORY, "assets").replaceAll(" ", "\\ ")}`,
+            `--gameDir ${gameDirectory.replaceAll(" ", "\\ ")}`,
+            `--assetsDir ${path.join(DIRECTORIES.MINECRAFT, "assets").replaceAll(" ", "\\ ")}`,
             `--assetIndex ${this.versionManager.isForge() ? this.versionManager.vanilaVersionManager.jsonLoader.getAssetIndex().id : this.versionManager.jsonLoader.getAssetIndex().id}`,
             `--uuid ${uuid}`,
             `--accessToken ${minecraftAuthToken}`,

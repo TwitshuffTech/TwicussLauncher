@@ -2,11 +2,11 @@ const { BrowserWindow } = require("electron");
 const path = require("path");
 
 const { msalConfig } = require("./authConfig.js");
-const { IPC_MESSAGES } = require("../constants.js");
+const { IPC_MESSAGES } = require("../util/constants.js");
 
 const MicrosoftAuthProvider = require("./MicrosoftAuthProvider");
 const MinecraftAuthProvider = require("./MinecraftAuthProvider");
-const ServerStatus = require("../ServerStatus.js");
+const ServerStatus = require("../minecraft/ServerStatus.js");
 
 const microsoftAuthProvider = new MicrosoftAuthProvider(msalConfig);
 const minecraftAuthProvider = new MinecraftAuthProvider();

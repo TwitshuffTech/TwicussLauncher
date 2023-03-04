@@ -2,11 +2,10 @@ const { app } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
-const Downloader = require("../../Downloader.js");
-const Server = require("../EnumServer.js");
+const Downloader = require("../util/Downloader.js");
+const Server = require("./EnumServer.js");
 
-const GAME_DIRECTORY = (process.platform === "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft");
-const LAUNCHER_DIRECTORY = path.join(app.getPath("appData"), ".twicusslauncher/minecraft");
+const { DIRECTORIES } = require("../util/constants.js");
 
 class ServerListHandler {
     constructor(server) {
@@ -52,23 +51,23 @@ class ServerListHandler {
     }
 
     downloadServersDat(gameDirectory) {
-        if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, gameDirectory + "/servers.dat"))) {
-            Downloader.downloadAndSave(this.getServersDat(), path.join(LAUNCHER_DIRECTORY, gameDirectory + "/servers.dat"));
+        if (!fs.existsSync(path.join(gameDirectory, "servers.dat"))) {
+            Downloader.downloadAndSave(this.getServersDat(), path.join(gameDirectory, "servers.dat"));
         }
     }
 
     addLaunchProfile() {
-        const propertiesJSON = JSON.parse(fs.readFileSync(path.join(GAME_DIRECTORY, "launcher_profiles.json")));
+        const propertiesJSON = JSON.parse(fs.readFileSync(path.join(DIRECTORIES.MINECRAFT, "launcher_profiles.json")));
         const profileName = this.getName();
         if (!(profileName in Object.keys(propertiesJSON.profiles))) {
             propertiesJSON.profiles[`${profileName}`] = {
                 "name": profileName,
                 "type": "custom",
                 "lastVersionId": this.getVersion(),
-                "gameDir": path.join(LAUNCHER_DIRECTORY, this.getVersion()),
+                "gameDir": path.join(DIRECTORIES.LAUNCHER, this.getVersion()),
                 "icon": this.getIcon()
             };
-            fs.writeFileSync(path.join(GAME_DIRECTORY, "launcher_profiles.json"), JSON.stringify(propertiesJSON));
+            fs.writeFileSync(path.join(DIRECTORIES.MINECRAFT, "launcher_profiles.json"), JSON.stringify(propertiesJSON));
         }
     }
 

@@ -4,11 +4,10 @@ const fs = require("fs");
 const unzip = require("extract-zip");
 const tar = require("tar");
 
-const Downloader = require("../../Downloader.js");
+const Downloader = require("../../util/Downloader.js");
 const JSONLoader = require("./JSONLoader.js");
 
-const GAME_DIRECTORY = (process.platform === "darwin") ? path.join(app.getPath("appData"), "minecraft") : path.join(app.getPath("appData"), ".minecraft");
-const LAUNCHER_DIRECTORY = path.join(app.getPath("appData"), ".twicusslauncher/minecraft");
+const { DIRECTORIES } = require("../../util/constants.js");
 
 class VersionManager {
     constructor(serverJSON) {
@@ -38,25 +37,25 @@ class VersionManager {
 
     async downloadJava() {
         const javaComponent = this.getJavaVersion();
-        if (!fs.existsSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent))) {
+        if (!fs.existsSync(path.join(DIRECTORIES.LAUNCHER, "runtime/" + javaComponent))) {
             switch (javaComponent) {
                 case "jre-legacy": {
                     let downloadUrl;
                     switch (process.platform) {
                         case "win32": {
                             downloadUrl = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_x64_windows_hotspot_8u362b09.zip";
-                            await Downloader.downloadAndSave(downloadUrl, path.join(LAUNCHER_DIRECTORY, "runtime/" + downloadUrl.split('/').pop()));
+                            await Downloader.downloadAndSave(downloadUrl, path.join(DIRECTORIES.LAUNCHER, "runtime/" + downloadUrl.split('/').pop()));
 
-                            fs.mkdirSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent), { recursive: true });
-                            await unzip(path.join(LAUNCHER_DIRECTORY, "runtime/" + downloadUrl.split('/').pop()), { dir: path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent) });
+                            fs.mkdirSync(path.join(DIRECTORIES.LAUNCHER, "runtime/" + javaComponent), { recursive: true });
+                            await unzip(path.join(DIRECTORIES.LAUNCHER, "runtime/" + downloadUrl.split('/').pop()), { dir: path.join(DIRECTORIES.LAUNCHER, "runtime/" + javaComponent) });
                             break;
                         }
                         case "darwin": {
                             downloadUrl = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_x64_mac_hotspot_8u362b09.tar.gz";
-                            await Downloader.downloadAndSave(downloadUrl, path.join(LAUNCHER_DIRECTORY, "runtime/" + downloadUrl.split('/').pop()));
+                            await Downloader.downloadAndSave(downloadUrl, path.join(DIRECTORIES.LAUNCHER, "runtime/" + downloadUrl.split('/').pop()));
 
-                            fs.mkdirSync(path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent), { recursive: true });
-                            await tar.extract({ file: path.join(LAUNCHER_DIRECTORY, "runtime/" + downloadUrl.split('/').pop()), cwd: path.join(LAUNCHER_DIRECTORY, "runtime/" + javaComponent) });
+                            fs.mkdirSync(path.join(DIRECTORIES.LAUNCHER, "runtime/" + javaComponent), { recursive: true });
+                            await tar.extract({ file: path.join(DIRECTORIES.LAUNCHER, "runtime/" + downloadUrl.split('/').pop()), cwd: path.join(DIRECTORIES.LAUNCHER, "runtime/" + javaComponent) });
                             break;
                         }
                     }
@@ -67,8 +66,8 @@ class VersionManager {
     }
 
     async downloadLibraries(nativeDirectory) {
-        if (this.vanilaVersionHandler) {
-            await this.vanilaVersionHandler.downloadLibraries(this.nativeDirectory);
+        if (this.vanilaVersionManager) {
+            await this.vanilaVersionManager.downloadLibraries(nativeDirectory);
         }
 
         for (let library of this.getJSONLoader().getLibraries()) {
@@ -94,17 +93,18 @@ class VersionManager {
                 url = library.downloads.artifact.url;
             }
 
-            if (!fs.existsSync(path.join(GAME_DIRECTORY, "libraries/" + address))) {
+            if (!fs.existsSync(path.join(DIRECTORIES.MINECRAFT, "libraries/" + address))) {
                 if (url) {
-                    await Downloader.downloadAndSave(url, path.join(GAME_DIRECTORY, "libraries/" + address));
+                    await Downloader.downloadAndSave(url, path.join(DIRECTORIES.MINECRAFT, "libraries/" + address));
                 } else {
-                    await Downloader.downloadAndSave(this.getPreClientURL(), path.join(GAME_DIRECTORY, "libraries/" + address)); // urlが記載されてないのは現状ビルド前のforgeバージョン.jarだけのためとりあえずこの場合分けで
+                    await Downloader.downloadAndSave(this.getPreClientURL(), path.join(DIRECTORIES.MINECRAFT, "libraries/" + address)); // urlが記載されてないのは現状ビルド前のforgeバージョン.jarだけのためとりあえずこの場合分けで
                 }                
             }
         }
         
         // nativesファイルをnativeDirectoryに展開する
         if (!fs.existsSync(path.join(nativeDirectory, "META-INF"))) {
+            fs.mkdirSync(nativeDirectory, { recursive: true });
             for (let library of this.getJSONLoader().getLibraries()) {
                 let address;
                 let isNative = false;
@@ -123,7 +123,7 @@ class VersionManager {
                 }
 
                 if (isNative) {
-                    await unzip(`${path.join(GAME_DIRECTORY, "libraries/" + address)}`, { dir: nativeDirectory });
+                    await unzip(`${path.join(DIRECTORIES.MINECRAFT, "libraries/" + address)}`, { dir: nativeDirectory });
                 }
             }
         }
@@ -133,13 +133,13 @@ class VersionManager {
         if (this.isForge()) {
             this.vanilaVersionManager.downloadAssets();
         } else {
-            if (!fs.existsSync(path.join(GAME_DIRECTORY, `assets/indexes/${this.getJSONLoader().getAssetIndex().id}.json`))) {
-                Downloader.downloadAndSave(this.getJSONLoader().getAssetIndex().url, path.join(GAME_DIRECTORY, `assets/indexes/${this.getJSONLoader().getAssetIndex().id}.json`));
+            if (!fs.existsSync(path.join(DIRECTORIES.MINECRAFT, `assets/indexes/${this.getJSONLoader().getAssetIndex().id}.json`))) {
+                Downloader.downloadAndSave(this.getJSONLoader().getAssetIndex().url, path.join(DIRECTORIES.MINECRAFT, `assets/indexes/${this.getJSONLoader().getAssetIndex().id}.json`));
                 const assetsJSON = await Downloader.downloadJSON(this.getJSONLoader().getAssetIndex().url);
 
                 for (let name in assetsJSON.objects) {
                     const hashPath = assetsJSON.objects[name].hash.slice(0, 2) + "/" + assetsJSON.objects[name].hash;
-                    await Downloader.downloadAndSave(`https://resources.download.minecraft.net/${hashPath}`, path.join(GAME_DIRECTORY, `assets/objects/${hashPath}`));
+                    await Downloader.downloadAndSave(`https://resources.download.minecraft.net/${hashPath}`, path.join(DIRECTORIES.MINECRAFT, `assets/objects/${hashPath}`));
                 }
             }
         }
@@ -171,7 +171,7 @@ class VersionManager {
             } else {
                 address = library.downloads.artifact.path;
             }
-            paths.push(path.join(GAME_DIRECTORY, "libraries/" + address));
+            paths.push(path.join(DIRECTORIES.MINECRAFT, "libraries/" + address));
         }
         paths.push(this.getClientPath());
 
@@ -211,15 +211,15 @@ class VersionManager {
     }
 
     getJSONPath() {
-        return path.join(GAME_DIRECTORY, "versions/" + this.getVersion() + "/" + this.getVersion() + ".json");
+        return path.join(DIRECTORIES.MINECRAFT, "versions/" + this.getVersion() + "/" + this.getVersion() + ".json");
     }
 
     getClientPath() {
-        return path.join(GAME_DIRECTORY, "versions/" + this.getVersion() + "/" + this.getVersion() + ".jar");
+        return path.join(DIRECTORIES.MINECRAFT, "versions/" + this.getVersion() + "/" + this.getVersion() + ".jar");
     }
 
     getNativeDirectory() {
-        return path.join(app.getPath("appData"), ".twicusslauncher/minecraft/" + this.getVersion() + "/natives");
+        return path.join(DIRECTORIES.LAUNCHER, "natives/" + this.getVersion());
     }
 
     getJavaVersion() {
@@ -234,14 +234,14 @@ class VersionManager {
                         if (useOfficialJRE) {
                             return path.join(app.getPath("appData"), "../Local/Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe");
                         } else {
-                            return path.join(LAUNCHER_DIRECTORY, "/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe");
+                            return path.join(DIRECTORIES.LAUNCHER, "/runtime/jre-legacy/jdk8u362-b09-jre/bin/javaw.exe");
                         }
                     }
                     case "darwin": {
                         if (useOfficialJRE) {
                             return path.join(app.getPath("appData"), "minecraft/runtime/jre-legacy/mac-os/jre-legacy/jre.bundle/Contents/Home/bin/java");
                         } else {
-                            return path.join(LAUNCHER_DIRECTORY, "/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java");
+                            return path.join(DIRECTORIES.LAUNCHER, "/runtime/jre-legacy/jdk8u362-b09-jre/Contents/Home/bin/java");
                         }
                     }
                 }

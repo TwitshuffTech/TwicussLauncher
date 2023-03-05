@@ -1,5 +1,5 @@
-const signInButton = document.getElementById("signInButton")
+const signInButton = document.getElementById("signInButton");
 
 signInButton.addEventListener("click", () => {
-    window.renderer.sendLoginMessage()
+    window.renderer.sendLoginMessage();
 })

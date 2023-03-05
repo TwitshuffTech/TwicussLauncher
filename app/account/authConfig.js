@@ -1,6 +1,6 @@
-const { LogLevel } = require("@azure/msal-node")
+const { LogLevel } = require("@azure/msal-node");
 
-const AAD_ENDPOINT_HOST = "https://login.microsoftonline.com/"
+const AAD_ENDPOINT_HOST = "https://login.microsoftonline.com/";
 
 const msalConfig = {
     auth: {
@@ -16,8 +16,8 @@ const msalConfig = {
             logLevel: LogLevel.Verbose,
         },
     },
-}
+};
 
 module.exports = {
     msalConfig: msalConfig,
-}
+};

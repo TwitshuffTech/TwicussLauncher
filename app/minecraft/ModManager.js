@@ -30,13 +30,42 @@ class ModManager {
         const dirents = fs.readdirSync(path.join(this.gameDirectory, "mods"), { withFileTypes: true });
         const mods = dirents.filter((dirent) => {
             return dirent.name.endsWith(".jar") || dirent.name.endsWith(".zip");
-        }).map(dirent => dirent.name);
+        }).map((dirent) => {
+            return dirent.name
+        });
 
         return mods;
     }
 
+    getModType(name, modList, legacyModList) {
+        for (let mod of modList) {
+            if (name === mod.name) {
+                return "REQUIRED";
+            }
+        }
+        for (let modName of legacyModList) {
+            if (name === modName) {
+                return "LEGACY";
+            }
+        }
+        return "";
+    }
+
+    removeLegacyMods(modList) {
+        for (let mod of modList) {
+            this.removeMod(mod);
+        }
+    }
+    
+
     removeMod(fileName) {
-        fs.unlinkSync(path.join(this.gameDirectory, "mods/" + fileName));
+        if (fs.existsSync(path.join(this.gameDirectory, "mods/" + fileName))) {
+            fs.unlinkSync(path.join(this.gameDirectory, "mods/" + fileName));
+            console.log(`removed ${fileName}`);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

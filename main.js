@@ -1,6 +1,7 @@
 const { app, ipcMain, dialog, BrowserWindow } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
+const Store = require("electron-store");
 
 const { IPC_MESSAGES, DIRECTORIES } = require("./app/util/constants");
 const Downloader = require("./app/util/Downloader.js");
@@ -8,13 +9,16 @@ const AccountHandler = require("./app/account/AccountHandler.js");
 const MinecraftLauncher = require("./app/minecraft/MinecraftLauncher.js");
 const Server = require("./app/minecraft/EnumServer.js");
 const ModManager = require("./app/minecraft/ModManager");
+const ServerListHandler = require("./app/minecraft/ServerListHandler");
 
 const VERSION = require("./package.json").version;
+
+const store = new Store();
 
 let modManager = new ModManager()
 let accountHandler;
 
-let server = Server["1.12.2forge"];
+let server = Server["1.12.2-forge-14.23.5.2859"];
 
 let mainWindow;
 
@@ -42,6 +46,7 @@ app.whenReady().then(() => {
     accountHandler.autoLogin();
 
     checkUpdate();
+    applyConfig();
 });
 
 app.on("window-all-closed", () => {
@@ -91,6 +96,12 @@ const checkUpdate = async () => {
     }
 }
 
+const applyConfig = () => {
+    if (store.get("gameLauncher")) {
+        DIRECTORIES.LAUNCHER = store.get("gameLauncher");
+    }
+}
+
 ipcMain.on(IPC_MESSAGES.LOGIN, () => {
     accountHandler.login();
 });
@@ -104,14 +115,47 @@ ipcMain.on(IPC_MESSAGES.USE_OFFICIAL_JRE, (event, bool) => {
 });
 
 ipcMain.on(IPC_MESSAGES.RELOAD_MODS, async () => {
-    modManager.setGameDirectory(path.join(DIRECTORIES.LAUNCHER, server));
-    mainWindow.webContents.send(IPC_MESSAGES.SHOW_INSTALLED_MODS, await modManager.getInstalledMods());
+    reloadMods();
 });
 
-ipcMain.on(IPC_MESSAGES.DELETE_MOD, async(event, mod) => {
-    await modManager.removeMod(mod)
-    mainWindow.webContents.send(IPC_MESSAGES.SHOW_INSTALLED_MODS, await modManager.getInstalledMods());
+ipcMain.on(IPC_MESSAGES.DELETE_MOD, async (event, name) => {
+    await modManager.removeMod(name)
+    reloadMods();
 });
+
+const reloadMods = async () => {
+    modManager.setGameDirectory(path.join(DIRECTORIES.LAUNCHER, server));
+    let installedMods = await modManager.getInstalledMods();
+
+    let serverListHandler = new ServerListHandler(server);
+    await serverListHandler.loadServerJSON();
+    let modList = await serverListHandler.getModList();
+    let legacyModList = await serverListHandler.getLegacyModList();
+
+    mainWindow.webContents.send(IPC_MESSAGES.SHOW_INSTALLED_MODS, installedMods.map((name) => { 
+        return {
+            name: name,
+            type: modManager.getModType(name, modList, legacyModList)
+        }
+    }));
+}
+
+ipcMain.on(IPC_MESSAGES.RELOAD_DIRECTORIES, () => {
+    mainWindow.webContents.send(IPC_MESSAGES.SHOW_GAME_DIRECTORY, DIRECTORIES.LAUNCHER);
+})
+
+ipcMain.on(IPC_MESSAGES.UPDATE_GAME_DIRECTORY, () => {
+    let directory = dialog.showOpenDialogSync(mainWindow, {
+        properties: ["openDirectory"],
+        title: "ゲームディレクトリを選択してください",
+        defaultPath: DIRECTORIES.LAUNCHER,
+    });
+    if (directory) {
+        DIRECTORIES.LAUNCHER = directory[0];
+        store.set("gameLauncher", DIRECTORIES.LAUNCHER);
+        mainWindow.webContents.send(IPC_MESSAGES.SHOW_GAME_DIRECTORY, DIRECTORIES.LAUNCHER);
+    }
+})
 
 ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     let minecraftLauncher = new MinecraftLauncher(server);
@@ -119,6 +163,10 @@ ipcMain.on(IPC_MESSAGES.RUN_MINECRAFT, async () => {
     await minecraftLauncher.setup();
     let result = await minecraftLauncher.launchGame(accountHandler.getUserName(), accountHandler.getUUID(), accountHandler.getMinecraftAuthToken(), useOfficialJRE);
     if (result != null) {
-        dialog.showMessageBox(mainWindow, { type: "error", title: "Error", message: `Minecraftの起動に失敗しました\r\n${result}`});
+        dialog.showMessageBox(mainWindow, {
+            type: "error",
+            title: "Error",
+            message: `Minecraftの起動に失敗しました\r\n${result}`
+        });
     }
 })

@@ -41,7 +41,7 @@ class ServerListHandler {
         // }
         let jsonUrl;
         switch (this.server) {
-            case Server["1.12.2forge"]:
+            case Server["1.12.2-forge-14.23.5.2859"]:
                 jsonUrl = "http://twicusstumble.ddns.net/mods/twicuss1.12.2.json"
                 break;
         }
@@ -85,6 +85,10 @@ class ServerListHandler {
 
     getModList() {
         return this.serverJSON.mods;
+    }
+
+    getLegacyModList() {
+        return this.serverJSON.legacy_mods;
     }
 
     getIcon() {

@@ -16,8 +16,14 @@ contextBridge.exposeInMainWorld("renderer", {
     sendReloadingMods: () => {
         ipcRenderer.send("RELOAD_MODS");
     },
-    sendDeletingMods: () => {
-        ipcRenderer.send("DELETE_MOD", mod);
+    sendDeletingMod: (name) => {
+        ipcRenderer.send("DELETE_MOD", name);
+    },
+    sendReloadingDirectories: () => {
+        ipcRenderer.send("RELOAD_DIRECTORIES");
+    },
+    sendUpdateGameDirectory: () => {
+        ipcRenderer.send("UPDATE_GAME_DIRECTORY")
     },
     showPlayerName: (func) => {
         ipcRenderer.on("SHOW_PLAYER_NAME", (event, ...args) => func(event, ...args));
@@ -30,5 +36,8 @@ contextBridge.exposeInMainWorld("renderer", {
     },
     showInstalledMods: (func) => {
         ipcRenderer.on("SHOW_INSTALLED_MODS", (event, ...args) => func(event, ...args));
+    },
+    showGameDirectory: (func) => {
+        ipcRenderer.on("SHOW_GAME_DIRECTORY", (event, ...args) => func(event, ...args));
     }
 });

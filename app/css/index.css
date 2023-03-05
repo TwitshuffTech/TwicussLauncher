@@ -230,7 +230,7 @@ body {
     background-color: orangered;
 }
 
-.partition {
+.main-page .partition {
     position: relative;
 
     width: 2px;
@@ -302,7 +302,7 @@ body {
     left: 80px;
 
     width: 180px;
-    height: 70%;
+    height: calc(100% - 87px - 87px);
 
     display: flex;
     flex-flow: column;
@@ -335,8 +335,8 @@ body {
     top: 87px;
     left: 290px;
 
-    width: 60%;
-    height: 70%;
+    width: calc(100% - 290px - 80px);
+    height: calc(100% - 87px - 87px);
 }
 
 .settings-contents h1 {
@@ -345,6 +345,24 @@ body {
     font-size: 25px;
     font-weight: 400;
     margin: 0 0 55px 0;
+}
+
+.settings-contents h2 {
+    position: relative;
+
+    font-size: 20px;
+    font-weight: 400;
+    margin: 0 0 0 0;
+}
+
+.settings-contents .partition {
+    position: relative;
+
+    width: 100%;
+    height: 1px;
+
+    background-color: rgba(120, 120, 120, 0.8);
+    margin: 0 0 20px 0;
 }
 
 .account-page {
@@ -427,6 +445,44 @@ body {
     transition-property: opacity;
 }
 
+.minecraft-page .game-directory-settings {
+    position: relative;
+
+    width: 100%;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+}
+
+.minecraft-page .game-directory-settings div {
+    width: calc(100% - 65px - 15px);
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    margin: 0 0 0 15px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.minecraft-page .game-directory-settings button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: absolute;
+    right: 0;
+    
+    width: 60px;
+    height: 100%;
+
+    color: white;
+}
+
 .mods-page {
     position: absolute;
     top: 0;
@@ -438,6 +494,95 @@ body {
     opacity: 0;
     pointer-events: none;
     transition-property: opacity;
+}
+
+.mod-list {
+    position: relative;
+
+    width: 100%;
+    height: calc(100% - 85px - 40px);
+    
+    overflow: auto;
+}
+
+.mod-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mod-list::-webkit-scrollbar-thumb {
+    background-color: rgb(120, 120, 120);
+    border-radius: 9999px;
+}
+
+.mod-lsit::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.mod-list .mod {
+    position: relative;
+
+    width: 100%;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    margin: 0 0 15px 0;
+}
+
+.mod-list .mod p {
+    margin: 0 0 0 15px;
+}
+
+.mod-list .mod .legacy {
+    color: orangered;
+}
+
+.mod-list .mod .required::after {
+    content: "REQUIRED";
+    position: relative;
+    left: 20px;
+
+    font-size: 0.8em;
+    border-radius: 3px;
+    background-color: yellowgreen;
+}
+
+.mod-list .mod .legacy::after {
+    content: "LEGACY";
+    position: relative;
+    left: 20px;
+
+    font-size: 0.8em;
+    border-radius: 3px;
+    color: white;
+    background-color: orangered;
+}
+
+.mod-list .mod .delete-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    appearance: none;
+
+    position: absolute;
+    right: 0;
+
+    width: 75px;
+    height: 25px;
+
+    color: orangered;
+    
+    border-radius: 3px;
+    border: 1px solid orangered;
+
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.mod-list .mod .delete-button:hover {
+    color: white;
+    background-color: orangered;
 }
 
 .java-page {

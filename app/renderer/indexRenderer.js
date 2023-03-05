@@ -21,6 +21,10 @@ const settingPages = document.getElementsByClassName("setting-page");
 const closeSettingsButton = document.getElementById("closeSettingsButton");
 
 const playerNameSettings = document.getElementById("playerNameSettings");
+
+const gameDirectory = document.getElementById("gameDirectory");
+const gameDirectoryButton = document.getElementById("gameDirectoryButton");
+
 const modList = document.getElementById("modList");
 
 const useOfficialJRE = document.getElementById("useOfficialJRE");
@@ -69,10 +73,36 @@ window.renderer.showServerStatus((event, status) => {
 });
 
 window.renderer.showInstalledMods((event, mods) => {
-    console.log(mods);
+    let html = "";
     for (let mod of mods) {
-        modList.innerHTML += `<div id=mod>${mod}</div>`;
+        html += `<div class="mod">`
+        switch (mod.type) {
+            case "REQUIRED":
+                html += `<p class="required">${mod.name}</p>`;
+                break;
+            case "LEGACY":
+                html += `<p class="legacy">${mod.name}</p>`;
+                break;
+            default:
+                html += `<p>${mod.name}</p>`;
+                break;
+        }
+        html += `<button type="button" class="delete-button">DELETE</button></div>`;
     }
+    modList.innerHTML = html;
+
+    const deleteButtons = document.getElementsByClassName("delete-button");
+
+    for (let i = 0; i < deleteButtons.length; i++) {
+        deleteButtons[i].addEventListener("click", () => {
+            let name = deleteButtons[i].parentElement.getElementsByTagName("p")[0].textContent;
+            window.renderer.sendDeletingMod(name);
+        })
+    }
+})
+
+window.renderer.showGameDirectory((event, path) => {
+    gameDirectory.innerHTML = path
 })
 
 signOutButton.addEventListener("click", () => {
@@ -95,6 +125,13 @@ settingsButton.addEventListener("click", () => {
     settingsPage.style.transitionDuration = "0.3s";
     settingsPage.style.pointerEvents = "auto";
     settingsPage.style.opacity = "1";
+
+    settingsButtons[0].checked = true;
+    settingPages[0].style.transitionDuration = "0.3s";
+    settingPages[0].style.pointerEvents = "auto";
+    settingPages[0].style.opacity = "1";
+
+    window.renderer.sendReloadingDirectories();
 });
 
 for (let i = 0; i < settingsButtons.length; i++) {
@@ -113,9 +150,15 @@ for (let i = 0; i < settingsButtons.length; i++) {
 
 modsSettingsButton.addEventListener("click", () => {
     window.renderer.sendReloadingMods();
-})
+});
 
 closeSettingsButton.addEventListener("click", () => {
+    for (let j = 0; j < settingPages.length; j++) {
+        settingPages[j].style.transitionDuration = "0";
+        settingPages[j].style.pointerEvents = "none";
+        settingPages[j].style.opacity = "0";
+    }
+    
     settingsPage.style.transitionDuration = "0";
     settingsPage.style.pointerEvents = "none";
     settingsPage.style.opacity = "0";
@@ -123,6 +166,10 @@ closeSettingsButton.addEventListener("click", () => {
     landing.style.transitionDuration = "0.3s";
     landing.style.pointerEvents = "auto";
     landing.style.opacity = "1";
+});
+
+gameDirectoryButton.addEventListener("click", () => {
+    window.renderer.sendUpdateGameDirectory();
 });
 
 useOfficialJRE.addEventListener("change", () => {
